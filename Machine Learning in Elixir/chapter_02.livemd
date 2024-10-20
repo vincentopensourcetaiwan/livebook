@@ -1,0 +1,345 @@
+<!-- livebook:{"app_settings":{"show_source":true,"slug":"ai-chapter-02","zero_downtime":true},"deployment_group_id":"84","hub_id":"team-vincent-elixir"} -->
+
+# Machine Learning in Elixir Chapter 02
+
+```elixir
+
+
+Mix.install([
+  {:nx, "~> 0.9.1"},
+  {:exla, "~> 0.5"},
+  {:benchee, github: "bencheeorg/benchee", override: true}
+])
+```
+
+## Introdution of Tensor
+
+```
+nx: data format for axon
+axon: neural network
+exla: compiler for neural network
+benchee: benchmark for evaluating performance
+```
+
+```elixir
+# create a tensor
+Nx.tensor([1, 2, 3])
+```
+
+```elixir
+# create tensors
+# a tensor has three properties
+# type, shape, data
+
+a = Nx.tensor([[1, 2, 3], [4, 5, 6]])
+b = Nx.tensor(1.0)
+c = Nx.tensor([[[[[[1.0, 2]]]]]])
+
+dbg(a)
+dbg(b)
+dbg(c)
+```
+
+```elixir
+# tensor has a type
+# the two tensors are numeric type
+
+a = Nx.tensor([1, 2, 3])
+b = Nx.tensor([1.0, 2.0, 3.0])
+dbg(a)
+dbg(b)
+```
+
+```elixir
+# specifically the type of a tensor
+
+Nx.tensor(1.0e-45, type: {:f, 64})
+```
+
+```elixir
+# overflow 
+# the type is too small to represent 128
+
+Nx.tensor(128, type: {:s, 8})
+```
+
+```elixir
+# a tensor has only one type
+
+Nx.tensor([1.0, 2, 3])
+```
+
+```elixir
+# a tensor has a shape
+
+# shape: {2}
+a = Nx.tensor([1, 2])
+
+# shape: {2 ,2}
+b = Nx.tensor([[1, 2], [3, 4]])
+
+# shape: {2, 2, 2}
+c = Nx.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+
+dbg(a)
+dbg(b)
+dbg(c)
+```
+
+```elixir
+# no shape property
+Nx.tensor(10)
+```
+
+```elixir
+# shape: {2, 3}
+# name each dimension
+# shape: {x: 2, y: 3}
+# example {height: 178, weight: 77}
+
+Nx.tensor([[1, 2, 3], [4, 5, 6]], names: [:x, :y])
+```
+
+```elixir
+# create a tensor
+# shape: {2, 3}
+a = Nx.tensor([[1, 2, 3], [4, 5, 6]])
+```
+
+```elixir
+# the underlayint of tensor is binary
+Nx.to_binary(a)
+```
+
+```elixir
+# conveert a binary to a tensor
+
+<<1::64-signed-native, 2::64-signed-native, 3::64-signed-native>>
+|> Nx.from_binary({:s, 64})
+```
+
+```elixir
+# convert a binary to tensor, then do a tensor operation
+
+<<1::64-signed-native, 2::64-signed-native, 3::64-signed-native>>
+|> Nx.from_binary({:s, 64})
+|> Nx.reshape({1, 3})
+```
+
+```elixir
+# create a tensor
+# shape: {3}
+a = Nx.tensor([1, 2, 3])
+```
+
+```elixir
+# cast the type 
+# reshape to {1, 3, 1}
+a
+|> Nx.as_type({:f, 32})
+|> Nx.reshape({1, 3, 1})
+```
+
+```elixir
+# cast the type
+
+a
+|> Nx.as_type({:s, 64}) 
+|> Nx.bitcast({:f, 64}) 
+```
+
+```elixir
+# create a tensor
+# shape: {2, 2, 3}
+a = Nx.tensor([[[-1,-2,-3], [-4, -5, -6]], [[1,2, 3], [4, 5, 6]]])
+```
+
+```elixir
+# do abs to every element
+# no change shape
+# shape: {2, 2, 3}
+Nx.abs(a)
+```
+
+```elixir
+# create a tensor
+# shape: {2, 3}
+a = Nx.tensor([[1, 2, 3], [4, 5, 6]])
+
+# create a tensor
+# shape: {2, 3}
+b = Nx.tensor([[4, 5, 6], [7, 8, 9]])
+```
+
+```elixir
+# add two tensor, without change shape
+# shape: {2, 3}
+
+Nx.add(a, b)
+```
+
+```elixir
+# multiply two tensor, without change shape
+# shape: {2, 3}
+
+Nx.multiply(a, b)
+```
+
+```elixir
+# add two tensor, without change shape
+
+# first tensor without shape
+# second tensor shape: {3}
+# after operation the shape no change -> shape: {3}
+
+Nx.add(5, Nx.tensor([1, 2, 3]))
+```
+
+```elixir
+# add two tensor
+# first tensor shape: {3}
+# second tensor shape: {2, 3}
+# after operation shape: {2, 3}
+
+Nx.add(Nx.tensor([1, 2, 3]), Nx.tensor([[4, 5, 6], [7, 8, 9]]))
+```
+
+```elixir
+# create a tensor to represent revenue of 12 months
+# shape: {12}
+revs = Nx.tensor([85, 76, 42, 34, 46, 23, 52, 99, 22, 32, 85, 51])
+```
+
+```elixir
+# get total revenue of the year
+# shape is changed -> no shape
+Nx.sum(revs)
+```
+
+```elixir
+# create a tensor to represent 4 year, 12 months, revenue
+# shape: {4 ,12}
+# shape: {year: 4, month: 12}
+revs = Nx.tensor(
+  [
+    [21, 64, 86, 26, 74, 81, 38, 79, 70, 48, 85, 33], 
+    [64, 82, 48, 39, 70, 71, 81, 53, 50, 67, 36, 50], 
+    [68, 74, 39, 78, 95, 62, 53, 21, 43, 59, 51, 88], 
+    [47, 74, 97, 51, 98, 47, 61, 36, 83, 55, 74, 43]
+  ], 
+  names: [:year, :month]
+)
+
+```
+
+```elixir
+# find total revenue for each month
+# shape: {12}
+# shape: {year: 12}
+Nx.sum(revs, axes: [:year])
+```
+
+```elixir
+# find total revenue for each year
+# shape: {4}
+# shape: {year: 4}
+Nx.sum(revs, axes: [:month])
+```
+
+```elixir
+# define a elixir module
+
+# defmodule MyModule do
+#   def adds_one(x) do
+#     Nx.add(x, 1)
+#   end
+# end
+```
+
+```elixir
+# rewrite the function with nx compiler
+
+defmodule MyModule do
+  import Nx.Defn
+
+  defn adds_one(x) do
+    Nx.add(x, 1) |> print_expr()
+  end
+end
+```
+
+```elixir
+# use the module to operate a tensor
+MyModule.adds_one(Nx.tensor([1, 2, 3]))
+```
+
+```elixir
+# define a module to do tensor computation
+
+defmodule Softmax do
+  import Nx.Defn
+
+  defn(softmax(n), do: Nx.exp(n) / Nx.sum(Nx.exp(n)))
+end
+```
+
+```elixir
+# do a huge computation to compare compiler performance
+
+key = Nx.Random.key(42)
+{tensor, key} = Nx.Random.uniform(key, shape: {1_000_000})
+
+Benchee.run(
+  %{
+    "JIT with EXLA" => fn ->
+      apply(EXLA.jit(&Softmax.softmax/1), [tensor])
+    end,
+    "Regular Elixir" => fn ->
+      Softmax.softmax(tensor)
+    end
+  },
+  time: 10
+)
+```
+
+```elixir
+# define compiler is EXLA
+Nx.Defn.global_default_options(compiler: EXLA)
+
+key = Nx.Random.key(42)
+{tensor, key} = Nx.Random.uniform(key, shape: {1_000_000})
+
+Benchee.run(
+  %{
+    "JIT with EXLA" => fn ->
+      apply(EXLA.jit(&Softmax.softmax/1), [tensor])
+    end,
+    "Regular Elixir" => fn ->
+      Softmax.softmax(tensor)
+    end
+  },
+  time: 10
+)
+```
+
+```elixir
+# use backend as default compiler
+Nx.default_backend(EXLA.Backend)
+
+key = Nx.Random.key(42)
+{tensor, key} = Nx.Random.uniform(key, shape: {1_000_000})
+
+Benchee.run(
+  %{
+    "JIT with EXLA" => fn ->
+      apply(EXLA.jit(&Softmax.softmax/1), [tensor])
+    end,
+    "Regular Elixir" => fn ->
+      Softmax.softmax(tensor)
+    end
+  },
+  time: 10
+)
+```
+
+<!-- livebook:{"offset":5710,"stamp":{"token":"XCP.tlL73m9_x9VaogqQ3kX9-zWYh_R3ZO4eaaz17DntZWOPPil6l4p2XkqiXe7P36-6Rk9o8_DEa1lyy88wp_CoN531GepBVlWiC5gSXi6azqx5pfB9YXr1xJpn","token_signature":"KFnHVuihpFmazdgs1f2a9uPL12y8rbo738tNlemJdEBcQSp7uWOmTPJ4v--rMgjWh4fsHYHLgTcgQvOaNWBCTnuMziBT4JdEs5-yp1_vidOWeF6GYhCkGMTw845pIBk-ruc382mabJpNvvhadBA0D6x7WHuPKQ8U4xtCI29EqPVfcP2VTPpFtH9qtIAbUJDDCRwkrrO1RvBjlLyJmHRUl9VrxoAenk3oFMV3xirIIgHNFixRucPFqJZLvwXE-K7_exSfpuw4FklKm6wBmgIcZPmilEu4GkH5d-_l6UbF05Ij86Ew7J6FLEfmbdDOFeKDjd6wiz8ZEwmv6YgpLQeQcA","version":1}} -->
