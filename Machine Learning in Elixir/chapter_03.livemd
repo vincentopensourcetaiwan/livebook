@@ -1,0 +1,28 @@
+<!-- livebook:{"app_settings":{"show_source":true,"slug":"ai-chapter-03","zero_downtime":true},"deployment_group_id":"84","hub_id":"team-vincent-elixir"} -->
+
+# Machine Learning in Elixir Chapter 03
+
+```elixir
+Mix.install([
+  {:nx, "~> 0.5"},
+  {:exla, "~> 0.5"},
+  {:kino, "~> 0.8"},
+  {:stb_image, "~> 0.6"},
+  {:vega_lite, "~> 0.1"},
+  {:kino_vega_lite, "~> 0.1"}
+])
+```
+
+## Section
+
+```elixir
+a = Nx.tensor([1, 2, 3])
+b = Nx.tensor([4.0, 5.0, 6.0])
+c = Nx.tensor([1, 0, 1], type: {:u, 8})
+
+IO.inspect a, label: :a
+IO.inspect b, label: :b
+IO.inspect c, label: :c
+```
+
+<!-- livebook:{"offset":570,"stamp":{"token":"XCP.i9Z5ynUR0eEXuJ1_oB_J-0QOBsAnPnA75IWxdyK7wm9bYICr6LipLFmhv5XCHQI5UqRpMrrhyKLfAKCbAlcWCLpUaqWLf3ZHmQrsvGau0UsUqocjFpQX9sS_","token_signature":"e_gm09gFciE_WKN0B6jA5ugwaJa8pjJhGVaWpXh5ROaRAB6hUXE2aqdBROmk-PtlMm1S2jzGDsTB1o5O1z3pftvYSuys7FUu-Mpmb_CVlkGxVSOJfhW6nB0WkFkt0tA-f-neEhNI3jlICuF-Oetu5AlUS7Yl6lY0-hcmjCBYPMH9ZbPa_2Qjc2EAhDlHsvH77xSlmWJxeBBSvEiVwrVWIvB4PUnzeHlV4rIccjg62XARe5d9AfY1NEjy3JwqtNKeIu5RisgEK9X8-Tcw1d4jg2nRoNGrzI4q28EVpalAMEZqR0Icql5YDjiMYch0dpviILYeQw7BMA95c4v0paypAQ","version":1}} -->
