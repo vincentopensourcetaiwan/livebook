@@ -124,4 +124,4 @@ model
 |> Axon.Loop.run(data, trained_model_state)
 ```
 
-<!-- livebook:{"offset":2695,"stamp":{"token":"XCP.jT1ZfBp4yLI3wpb8jpnHGJ3Q_oIBwa3V12pgwD0xoxIap0MPiRld-KieJKeZJO1zUKgMBRulJT77kBVbYZnxnYNAF7as1AR1DgYyXBqSJnJUW2n65SpMu48h","token_signature":"g18NCnvELEl9nVXs1chXz7EZUHurLNibpxaUNvIAz20wxugs07ouqWCJ1mznDBg76IdwbBLSvQU-vuuoz-zBqh8q8k_0am74-qMb-GKZsb1tIyrY-pfedGKOah5Sn-vQQDC-9dgtbDxWoDRtVxFsOmV32jKs5nh7jt602FMaZpp7_g2hQthtP8xPRmrLj3Nfd_eGQTN0D2jI4YWrRJWfBEtemOLiHiFyYsiayBWPpK4ag96syc0awQVuJO5bYuBVRlJHD37grcTE4AR90aVahAG7qZoINNL2DJT4h7al-FR6v0xcv3FOjGw3464tsb9N7NfyCYaBBgaE6fohRX3bvg","version":1}} -->
+<!-- livebook:{"offset":2695,"stamp":{"token":"XCP.s0w51el_c83RW2u7PYbDK9PMvFXSoXBeIZnqk8xCJvYd9wYW7XkY5eEEaGoIcofMaCnJBA6TVZHh79Xij7uekRX4RT7vlu8QeazmRQclN-6tBh_7TJMWRWRF","token_signature":"Yh11GmDLpWdcwjh43Da7ug-F_rQ-4HUz8YiqjEEB-Z8eOcy7b_KxyH5czpdtXLRmxcFkrsz98nPpjdlxt0SShIsXmEFhVfcP4mmV-ZixnDsAPUZMMNDgOirRVBPhI2bd1PlWvKK9UsG56gpUtxzGWzmzZJQM_JYLedza1_m6zk0k9waKcdBekIsZHdjsXT1M_lp84jfaKBABw4wQZDQf58KpIcG3qXhKjl2blO2NLTdUYa-FOtWFV0FPFJ2dOPrkwJqVCTMY42zrD850mBXLSD49JSVkYUTETEqFQCHRXUjdzriRrXazyVinD2DGqtRdN4kDLHmMW5WIH8Y5hCmanQ","version":1}} -->

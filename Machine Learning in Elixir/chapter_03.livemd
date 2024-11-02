@@ -1,4 +1,4 @@
-<!-- livebook:{"app_settings":{"show_source":true,"slug":"ai-chapter-03","zero_downtime":true},"deployment_group_id":"84","hub_id":"team-vincent-elixir"} -->
+<!-- livebook:{"app_settings":{"show_source":true,"slug":"ai-chapter-03","zero_downtime":true},"hub_id":"team-vincent-elixir"} -->
 
 # Machine Learning in Elixir Chapter 03
 
@@ -25,4 +25,196 @@ IO.inspect b, label: :b
 IO.inspect c, label: :c
 ```
 
-<!-- livebook:{"offset":570,"stamp":{"token":"XCP.i9Z5ynUR0eEXuJ1_oB_J-0QOBsAnPnA75IWxdyK7wm9bYICr6LipLFmhv5XCHQI5UqRpMrrhyKLfAKCbAlcWCLpUaqWLf3ZHmQrsvGau0UsUqocjFpQX9sS_","token_signature":"e_gm09gFciE_WKN0B6jA5ugwaJa8pjJhGVaWpXh5ROaRAB6hUXE2aqdBROmk-PtlMm1S2jzGDsTB1o5O1z3pftvYSuys7FUu-Mpmb_CVlkGxVSOJfhW6nB0WkFkt0tA-f-neEhNI3jlICuF-Oetu5AlUS7Yl6lY0-hcmjCBYPMH9ZbPa_2Qjc2EAhDlHsvH77xSlmWJxeBBSvEiVwrVWIvB4PUnzeHlV4rIccjg62XARe5d9AfY1NEjy3JwqtNKeIu5RisgEK9X8-Tcw1d4jg2nRoNGrzI4q28EVpalAMEZqR0Icql5YDjiMYch0dpviILYeQw7BMA95c4v0paypAQ","version":1}} -->
+```elixir
+goog_current_price = 2677.32
+goog_pe = 23.86
+goog_mkt_cap = 1760
+meta_current_price = 133.93
+meta_pe = 11.10
+meta_mkt_cap = 360
+
+stocks_matrix =
+  Nx.tensor([
+    [goog_current_price, goog_pe, goog_mkt_cap],
+    [meta_current_price, meta_pe, meta_mkt_cap]
+  ])
+
+IO.inspect(stocks_matrix)
+```
+
+```elixir
+sales_day_1 = Nx.tensor([32, 10, 14])
+sales_day_2 = Nx.tensor([10, 24, 21])
+```
+
+```elixir
+total_sales = Nx.add(sales_day_1, sales_day_2)
+```
+
+```elixir
+sales_day_1 = Nx.tensor([32, 10, 14])
+sales_day_2 = Nx.tensor([10, 24, 21])
+total_sales = Nx.add(sales_day_1, sales_day_2)
+keep_rate = 0.9
+unreturned_sales = Nx.multiply(keep_rate, total_sales)
+```
+
+```elixir
+price_per_product = Nx.tensor([9.95, 10.95, 5.99])
+revenue_per_product = Nx.multiply(unreturned_sales, price_per_product)
+```
+
+```elixir
+sales_matrix =
+  Nx.tensor([
+    [32, 10, 14],
+    [10, 24, 21]
+  ])
+```
+
+```elixir
+Nx.transpose(sales_matrix)
+```
+
+```elixir
+vector = Nx.tensor([1, 2, 3])
+Nx.transpose(vector)
+```
+
+```elixir
+invert_color_channels = Nx.tensor([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])
+
+"Cat.jpg"
+|> StbImage.read_file!()
+|> StbImage.resize(256, 256)
+|> StbImage.to_nx()
+|> Nx.dot(invert_color_channels)
+|> Nx.as_type({:u, 8})
+|> Kino.Image.new()
+```
+
+```elixir
+vector = Nx.dot(Nx.tensor([1, 2, 3]), Nx.tensor([1, 2, 3]))
+vector_matrix = Nx.dot(Nx.tensor([1, 2]), Nx.tensor([[1], [2]]))
+matrix_matrix = Nx.dot(Nx.tensor([[1, 2]]), Nx.tensor([[3], [4]]))
+vector |> IO.inspect(label: :vector)
+vector_matrix |> IO.inspect(label: :vector_matrix)
+matrix_matrix |> IO.inspect(label: :matrix_matrix)
+```
+
+```elixir
+simulation = fn key ->
+  {value, key} = Nx.Random.uniform(key)
+  if Nx.to_number(value) < 0.5, do: {0, key}, else: {1, key}
+end
+```
+
+```elixir
+key = Nx.Random.key(42)
+
+for n <- [10, 100, 1000, 10000] do
+  Enum.map_reduce(1..n, key, fn _, key -> simulation.(key) end)
+  |> elem(0)
+  |> Enum.sum()
+  |> IO.inspect()
+end
+```
+
+```elixir
+# defmodule BerryFarm do
+#   import Nx.Defn
+  
+#   defn profits(trees) do
+#     trees
+#     |> Nx.subtract(1)
+#     |> Nx.pow(4)
+#     |> Nx.negate()
+#     |> Nx.add(Nx.pow(trees, 3))
+#     |> Nx.add(Nx.pow(trees, 2))
+#   end
+# end
+```
+
+```elixir
+trees = Nx.linspace(0, 4, n: 100)
+profits = BerryFarm.profits(trees)
+
+alias VegaLite, as: Vl
+
+Vl.new(title: "Berry Profits", width: 1440, height: 1080)
+|> Vl.data_from_values(%{
+  trees: Nx.to_flat_list(trees),
+  profits: Nx.to_flat_list(profits)
+})
+|> Vl.mark(:line, interpolate: :basis)
+|> Vl.encode_field(:x, "trees", type: :quantitative)
+|> Vl.encode_field(:y, "profits", type: :quantitative)
+```
+
+```elixir
+defmodule BerryFarm do
+  
+  import Nx.Defn
+
+  defn profits(trees) do
+    -((trees - 1) ** 4) + trees ** 3 + trees ** 2
+  end
+
+  defn profits_derivative(trees) do
+    grad(trees, &profits/1)
+  end
+end
+```
+
+```elixir
+trees = Nx.linspace(0, 3, n: 100)
+profits = BerryFarm.profits(trees)
+profits_derivative = BerryFarm.profits_derivative(trees)
+
+alias VegaLite, as: Vl
+
+title = "Berry Profits and Profits Rate of Change"
+
+Vl.new(title: title, width: 1440, height: 1080)
+|> Vl.data_from_values(%{
+  trees: Nx.to_flat_list(trees),
+  profits: Nx.to_flat_list(profits),
+  profits_derivative: Nx.to_flat_list(profits_derivative)
+})
+|> Vl.layers([
+  Vl.new()
+  |> Vl.mark(:line, interpolate: :basis)
+  |> Vl.encode_field(:x, "trees", type: :quantitative)
+  |> Vl.encode_field(:y, "profits", type: :quantitative),
+  
+  Vl.new()   
+  |> Vl.mark(:line, interpolate: :basis)
+  |> Vl.encode_field(:x, "trees", type: :quantitative)
+  |> Vl.encode_field(:y, "profits_derivative", type: :quantitative)
+  |> Vl.encode(:color, value: "#ff0000")
+])
+```
+
+```elixir
+defmodule GradFun do
+  import Nx.Defn
+
+  defn my_function(x) do
+    x
+    |> Nx.cos()
+    |> Nx.exp()
+    |> Nx.sum()
+    |> print_expr()
+  end
+
+  defn grad_my_function(x) do
+    grad(x, &my_function/1) |> print_expr()
+  end
+end
+```
+
+```elixir
+GradFun.grad_my_function(Nx.tensor([1.0, 2.0, 3.0]))
+```
+
+<!-- livebook:{"offset":4478,"stamp":{"token":"XCP.4PzY0Jbb_y8OUnGKzOSDUo3yjdqIzeFhITV2CCvZRWNzrQxZ6Run1gllka0VMHbAFd1QBDMysbIWMOe3bAprLxlYckfWH40SkwrrI3ypbmh7udLFU0aP32CA","token_signature":"KIQRdFOq1EhBRxg-8oKWKCbu5pJJyCAmKVXGxGTH1Uegh1686MDsgFVlNDfg4wgjmkSWXCkGooICthlcaV8vVnEh172M64N9luTddqRsFpXc-dxjGj631dU44cIj7nnw_kTLnxUThj6let1dyhmHNf7JYWrN3v4hiDGljZcVDN30hyv1hjbx8HDr9ka9vwnWEArBKv367SxTEDdSKlIpp7j6qhAOTMROyFJ2TPCtxAUX2DseFnhK5iWZezWBuGBhCIlFZykfd8NN_vuDsEzsdAHNyJgsFuusqTWge7FfgFiFJCtq53z50fPprT2wN0hFAMuel_TU79OWAnWoGE1mww","version":1}} -->
