@@ -13,9 +13,68 @@ Mix.install([
 ])
 ```
 
-## Section
+## Introduction of machine learning math
+
+### The mix use in this chapter
+
+```
+nx: data format for axon
+exla: compiler for nx
+kino: livebook UI
+stb_image: image reader and writer
+vega_lite: elixir to Vega-Lite
+kino_vega_lite: live book to Vega-Lite
+Vega-Lite: from json to graph
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+### math of machine learning
+
+```
+linear algebra: data operation
+probability: predction
+vector calculus: tracking change
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Books
+
+#### linear algebra
+
+```
+Mathematics for Machine Learning [DFO20]
+Linear Algebra by Gilbert Strang [Str16]
+3Blue1Brown (https://www.3blue1brown.com/)
+Handbook for Automatic Computation [WR74]
+The Matrix Cookbook [PP08]
+```
+
+#### probability
+
+```
+Pattern Recognition and Machine Learning [Bis06]
+Probabilistic Machine Learning [Mur22]
+Deep Learning Book [GBC16]
+Mathematical Theory of Communication [Sha48]
+```
+
+#### vector calculus
+
+```
+Evaluating Derivatives [GW08]
+Autograd paper [Mac16]
+```
 
 ```elixir
+# set exla as default compiler
+Nx.default_backend(EXLA.Backend)
+```
+
+```elixir
+# define tensors
+
 a = Nx.tensor([1, 2, 3])
 b = Nx.tensor([4.0, 5.0, 6.0])
 c = Nx.tensor([1, 0, 1], type: {:u, 8})
@@ -26,9 +85,29 @@ IO.inspect c, label: :c
 ```
 
 ```elixir
+# define tensor to represent stock marcket
+
 goog_current_price = 2677.32
 goog_pe = 23.86
 goog_mkt_cap = 1760
+
+goog = Nx.tensor([goog_current_price, goog_pe, goog_mkt_cap])
+```
+
+```elixir
+# define scalar in tensor
+
+i_am_a_scalar = Nx.tensor(5)
+i_am_also_a_scalar = 5
+```
+
+```elixir
+# define matrix to represent stock marcket
+
+goog_current_price = 2677.32
+goog_pe = 23.86
+goog_mkt_cap = 1760
+
 meta_current_price = 133.93
 meta_pe = 11.10
 meta_mkt_cap = 360
@@ -43,28 +122,43 @@ IO.inspect(stocks_matrix)
 ```
 
 ```elixir
+# define two tensor to represet two days sales with 3 products
+
 sales_day_1 = Nx.tensor([32, 10, 14])
 sales_day_2 = Nx.tensor([10, 24, 21])
 ```
 
 ```elixir
+# get total sales
+# use nx addtion
+
 total_sales = Nx.add(sales_day_1, sales_day_2)
 ```
 
 ```elixir
+# get unretunrned sales
+# use nx multiply
+
 sales_day_1 = Nx.tensor([32, 10, 14])
 sales_day_2 = Nx.tensor([10, 24, 21])
 total_sales = Nx.add(sales_day_1, sales_day_2)
+
 keep_rate = 0.9
+
 unreturned_sales = Nx.multiply(keep_rate, total_sales)
 ```
 
 ```elixir
+# get revenue for each product
+# use nx multiply
+
 price_per_product = Nx.tensor([9.95, 10.95, 5.99])
 revenue_per_product = Nx.multiply(unreturned_sales, price_per_product)
 ```
 
 ```elixir
+# define a sales matrix
+
 sales_matrix =
   Nx.tensor([
     [32, 10, 14],
@@ -73,17 +167,28 @@ sales_matrix =
 ```
 
 ```elixir
+# nx transpose operation
+
 Nx.transpose(sales_matrix)
 ```
 
 ```elixir
+# define a tensor
+
 vector = Nx.tensor([1, 2, 3])
+```
+
+```elixir
+# no transpose operation
+
 Nx.transpose(vector)
 ```
 
 ```elixir
+# define a linear transformation
 invert_color_channels = Nx.tensor([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])
 
+# convert a image to do linear transformation
 "Cat.jpg"
 |> StbImage.read_file!()
 |> StbImage.resize(256, 256)
@@ -94,15 +199,21 @@ invert_color_channels = Nx.tensor([[-1, 0, 0], [0, -1, 0], [0, 0, -1]])
 ```
 
 ```elixir
+# matrix multiplications
+# use Nx.dot to do matrix multiplications
 vector = Nx.dot(Nx.tensor([1, 2, 3]), Nx.tensor([1, 2, 3]))
 vector_matrix = Nx.dot(Nx.tensor([1, 2]), Nx.tensor([[1], [2]]))
 matrix_matrix = Nx.dot(Nx.tensor([[1, 2]]), Nx.tensor([[3], [4]]))
+
+
 vector |> IO.inspect(label: :vector)
 vector_matrix |> IO.inspect(label: :vector_matrix)
 matrix_matrix |> IO.inspect(label: :matrix_matrix)
 ```
 
 ```elixir
+# define a simulation
+
 simulation = fn key ->
   {value, key} = Nx.Random.uniform(key)
   if Nx.to_number(value) < 0.5, do: {0, key}, else: {1, key}
@@ -110,8 +221,11 @@ end
 ```
 
 ```elixir
+# define a key
+# because it is a computer, so the key is fixed, and the result of the simulation is fixed
 key = Nx.Random.key(42)
 
+# execute the simulation function many times, get times of the result is 1 
 for n <- [10, 100, 1000, 10000] do
   Enum.map_reduce(1..n, key, fn _, key -> simulation.(key) end)
   |> elem(0)
@@ -121,6 +235,9 @@ end
 ```
 
 ```elixir
+# define a function 
+# define profit function
+
 # defmodule BerryFarm do
 #   import Nx.Defn
   
@@ -136,6 +253,8 @@ end
 ```
 
 ```elixir
+# visualize the function
+
 trees = Nx.linspace(0, 4, n: 100)
 profits = BerryFarm.profits(trees)
 
@@ -152,6 +271,10 @@ Vl.new(title: "Berry Profits", width: 1440, height: 1080)
 ```
 
 ```elixir
+# define two function
+# define profits function
+# define profits_derivative
+
 defmodule BerryFarm do
   
   import Nx.Defn
@@ -167,6 +290,8 @@ end
 ```
 
 ```elixir
+# visualize the two functions
+
 trees = Nx.linspace(0, 3, n: 100)
 profits = BerryFarm.profits(trees)
 profits_derivative = BerryFarm.profits_derivative(trees)
@@ -196,6 +321,10 @@ Vl.new(title: title, width: 1440, height: 1080)
 ```
 
 ```elixir
+# define two function
+# my_function
+# grad_my_function
+
 defmodule GradFun do
   import Nx.Defn
 
@@ -214,7 +343,9 @@ end
 ```
 
 ```elixir
+# give a tensor to find grad_my_function
+
 GradFun.grad_my_function(Nx.tensor([1.0, 2.0, 3.0]))
 ```
 
-<!-- livebook:{"offset":4478,"stamp":{"token":"XCP.4PzY0Jbb_y8OUnGKzOSDUo3yjdqIzeFhITV2CCvZRWNzrQxZ6Run1gllka0VMHbAFd1QBDMysbIWMOe3bAprLxlYckfWH40SkwrrI3ypbmh7udLFU0aP32CA","token_signature":"KIQRdFOq1EhBRxg-8oKWKCbu5pJJyCAmKVXGxGTH1Uegh1686MDsgFVlNDfg4wgjmkSWXCkGooICthlcaV8vVnEh172M64N9luTddqRsFpXc-dxjGj631dU44cIj7nnw_kTLnxUThj6let1dyhmHNf7JYWrN3v4hiDGljZcVDN30hyv1hjbx8HDr9ka9vwnWEArBKv367SxTEDdSKlIpp7j6qhAOTMROyFJ2TPCtxAUX2DseFnhK5iWZezWBuGBhCIlFZykfd8NN_vuDsEzsdAHNyJgsFuusqTWge7FfgFiFJCtq53z50fPprT2wN0hFAMuel_TU79OWAnWoGE1mww","version":1}} -->
+<!-- livebook:{"offset":6839,"stamp":{"token":"XCP.6PQRnwEbeZNlqz6WNWb5HTvnierG7zoKqCwQTo9JqZ7ni22XHJZz29ZcXhEferGzzYgM6sxceianu_bz0jJ9K12Pn1nlwVXlQul9VdXkuH0S1SD5_kyq5hhE","token_signature":"lTcz2Mpch2zMgqbEvQomkukWKNF5Yk80m2sLSG8tZzxbbydONsH8m1br_0IA4x3hir7T1TGtQC625le5A0tubV7L9vqntsTi7XmkYh2Sg8Hp9lFXr28C7F5OrCTUUjsXuWeJUn4zd_7DvjJMgkVcqKm4btPR0lQ_k14xrg9-ik-TSlbGAFigNzCm0yInNCp07Vd312RyBJ-MzRUhctYM8UGvDucUgCj6sqne8eDYLtKu1LUnCEg8VfvcrAW7RdV1m7TmAPCQUzwt4dVHFTbrvpkeSKZMAsfRD4LkKxpFu7vRaUiU92eNfaxX85bqmoDrh3cEqv-5Xyt4MxUvjLw3QQ","version":1}} -->

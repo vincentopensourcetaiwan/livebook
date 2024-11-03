@@ -14,10 +14,12 @@ Mix.install([
 
 ## Introdution of Tensor
 
+### The mix use in this chapter
+
 ```
 nx: data format for axon
 axon: neural network
-exla: compiler for neural network
+exla: compiler for nx
 benchee: benchmark for evaluating performance
 ```
 
@@ -342,4 +344,4 @@ Benchee.run(
 )
 ```
 
-<!-- livebook:{"offset":5710,"stamp":{"token":"XCP.tlL73m9_x9VaogqQ3kX9-zWYh_R3ZO4eaaz17DntZWOPPil6l4p2XkqiXe7P36-6Rk9o8_DEa1lyy88wp_CoN531GepBVlWiC5gSXi6azqx5pfB9YXr1xJpn","token_signature":"KFnHVuihpFmazdgs1f2a9uPL12y8rbo738tNlemJdEBcQSp7uWOmTPJ4v--rMgjWh4fsHYHLgTcgQvOaNWBCTnuMziBT4JdEs5-yp1_vidOWeF6GYhCkGMTw845pIBk-ruc382mabJpNvvhadBA0D6x7WHuPKQ8U4xtCI29EqPVfcP2VTPpFtH9qtIAbUJDDCRwkrrO1RvBjlLyJmHRUl9VrxoAenk3oFMV3xirIIgHNFixRucPFqJZLvwXE-K7_exSfpuw4FklKm6wBmgIcZPmilEu4GkH5d-_l6UbF05Ij86Ew7J6FLEfmbdDOFeKDjd6wiz8ZEwmv6YgpLQeQcA","version":1}} -->
+<!-- livebook:{"offset":5731,"stamp":{"token":"XCP.9Ob5NPkUvUdLPM5FpWwxRr1TX_khRMdCEitJBGrIm5wTWBV0H0KFfz009xe7x75AOwGal1pbQ3H2jdEhMZf3rmX0b-BIwKMB-fl6It28GtS9bj224glsU4kQ","token_signature":"FOa9_fNvh5zjsMCW7IFlX4m6L1NNyfNVK_xWoRwZaDeCjigk9EX6fcaZDooy6vdLHMNdjSYm6AnpCWa4fgFEscrR8CvpLOLoqe9dj9ec82xhOATDWN_XoSOxvfno9aYkkrWDrN_yjU-bxy2QgSVuhGmrOyDzueaS6LmT-hWBEeFlfpZy4aJivUHhdCAC1L6Kd3yF1eDJAOIdvy-S6hXWs459IwtmpfDFYGuh85pMNWs0bsZt02MQBmHBV7e1ELVt-Pa1VajxuaCQz4HvA4mvWL6h4Cl5BdkrXOZoolgXGp7XO1_AmZDfc5ZnyoYNHHWe1RmEw7XoFJeyD9WG54Vn5A","version":1}} -->
