@@ -1,0 +1,10 @@
+# Machine Learning in Elixir Chapter 03
+
+## Section
+
+```elixir
+def predict(input) do   
+  label = do_something(input)   
+  label 
+end
+```
