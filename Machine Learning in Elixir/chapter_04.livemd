@@ -8,3 +8,34 @@ def predict(input) do 
   label 
 end
 ```
+
+```elixir
+def predict(input, m, b) do   
+  label = m * input + b   
+  label 
+end
+```
+
+```elixir
+def predict(input) do
+  label = f(input, params)   
+  label 
+end
+```
+
+```elixir
+def model(params, inputs) do
+  labels = f(params, inputs)
+  labels 
+end  
+
+def loss(actual_labels, predicted_labels) do
+  loss_value = measure_difference(actual_labels, predicted_labels)
+  loss_value 
+end  
+
+def objective(params, actual_inputs, actual_labels) do   
+  predicted_labels = model(params, actual_inputs)    
+  loss(actual_labels, predicted_labels) 
+end
+```
