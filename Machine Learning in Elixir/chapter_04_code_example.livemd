@@ -41,5 +41,31 @@ defmodule SGD do
     labels = Nx.dot(inputs, params)
     labels
   end
+
+  defn mean_squared_error(y_true, y_pred) do
+    y_true
+    |> Nx.subtract(y_pred)
+    |> Nx.pow(2)
+    |> Nx.mean(axes: [-1])
+  end
+  
+  defn loss(actual_label, predicted_label) do   
+    loss_value = mean_squared_error(actual_label, predicted_label)   
+    loss_value 
+  end
+
+  defn objective(params, actual_inputs, actual_labels) do
+    predicted_labels = model(params, actual_inputs)
+    loss(actual_labels, predicted_labels)
+  end
+
+  defn step(params, actual_inputs, actual_labels) do  
+    {loss, params_grad} = value_and_grad(params, fn params ->    
+      objective(params, actual_inputs, actual_labels)  
+    end)  
+    
+    new_params = params - 1.0e-2 * params_grad  
+    {loss, new_params}
+  end
 end
 ```
