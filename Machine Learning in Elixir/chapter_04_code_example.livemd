@@ -28,3 +28,9 @@ train_data = Enum.zip(Nx.to_batched(train_x, 1), Nx.to_batched(train_y, 1))
 test_y = true_function.(true_params, test_x) 
 test_data = Enum.zip(Nx.to_batched(test_x, 1), Nx.to_batched(test_y, 1))
 ```
+
+```elixir
+defmodule SGD do
+  import Nx.Defn
+end
+```
