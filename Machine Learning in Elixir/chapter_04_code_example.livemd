@@ -67,5 +67,70 @@ defmodule SGD do
     new_params = params - 1.0e-2 * params_grad  
     {loss, new_params}
   end
+
+  def evaluate(trained_params, test_data) do   
+    test_data   
+    |> Enum.map(fn {x, y} ->     
+      prediction = model(trained_params, x)
+      loss(y, prediction)   
+    end)   
+    |> Enum.reduce(0, &Nx.add/2) 
+  end 
+  
+  def train(data, iterations, key) do   
+    {params, _key} = init_random_params(key)   
+    loss = Nx.tensor(0.0)   
+    {_, trained_params} = Enum.reduce(1..iterations, {loss, params}, fn i, {loss, params} ->
+      {new_loss, new_params} = Enum.reduce(Enum.with_index(data), {loss, params}, 
+        fn {{x, y}, j}, {curr_loss, curr_params} ->             
+          {batch_loss, new_batch_params} = step(curr_params, x, y)
+          avg_loss = Nx.add(Nx.mean(batch_loss), curr_loss) 
+            |> Nx.divide(j + 1) 
+          IO.puts("Epoch: #{i}, Loss: #{Nx.to_number(avg_loss)}")
+          {avg_loss, new_batch_params}
+        end)
+      {new_loss, new_params}
+    end)
+    trained_params 
+  end
 end
+```
+
+```elixir
+key = Nx.Random.key(100)
+{random_params, _} = SGD.init_random_params(key)
+SGD.evaluate(random_params, test_data)
+```
+
+```elixir
+key = Nx.Random.key(0)
+trained_params = SGD.train(train_data, 1, key)
+```
+
+```elixir
+SGD.evaluate(trained_params, test_data)
+```
+
+```elixir
+key = Nx.Random.key(42)
+{true_params, new_key} = Nx.Random.uniform(key, shape: {32, 1})
+
+true_function = fn params, x ->   
+  Nx.dot(x, params) 
+  |> Nx.cos() 
+end
+
+{train_x, new_key} = Nx.Random.uniform(new_key, shape: {10000, 32})
+train_y = true_function.(true_params, train_x)
+train_data = Enum.zip(Nx.to_batched(train_x, 1), Nx.to_batched(train_y, 1))
+
+{test_x, new_key} = Nx.Random.uniform(new_key, shape: {10000, 32})
+test_y = true_function.(true_params, test_x)
+test_data = Enum.zip(Nx.to_batched(test_x, 1), Nx.to_batched(test_y, 1))
+```
+
+```elixir
+key = Nx.Random.key(0)
+trained_params = SGD.train(train_data, 10, key)
+SGD.evaluate(trained_params, test_data)
 ```
