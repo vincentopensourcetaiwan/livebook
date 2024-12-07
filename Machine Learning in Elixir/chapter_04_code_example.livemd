@@ -6,13 +6,15 @@ Mix.install([
 ])
 ```
 
-## Section
+## Example
 
 ```elixir
 
 ```
 
 ```elixir
+# create trainning data
+
 key = Nx.Random.key(42)
 {true_params, new_key} = Nx.Random.uniform(key, shape: {32, 1})
 
@@ -30,6 +32,8 @@ test_data = Enum.zip(Nx.to_batched(test_x, 1), Nx.to_batched(test_y, 1))
 ```
 
 ```elixir
+# define module
+
 defmodule SGD do
   import Nx.Defn
 
@@ -97,21 +101,29 @@ end
 ```
 
 ```elixir
+# evalute random_params
+
 key = Nx.Random.key(100)
 {random_params, _} = SGD.init_random_params(key)
 SGD.evaluate(random_params, test_data)
 ```
 
 ```elixir
+# start trainning
+
 key = Nx.Random.key(0)
 trained_params = SGD.train(train_data, 1, key)
 ```
 
 ```elixir
+# evaluate trainnng result
+
 SGD.evaluate(trained_params, test_data)
 ```
 
 ```elixir
+# update trainnig data
+
 key = Nx.Random.key(42)
 {true_params, new_key} = Nx.Random.uniform(key, shape: {32, 1})
 
@@ -130,6 +142,8 @@ test_data = Enum.zip(Nx.to_batched(test_x, 1), Nx.to_batched(test_y, 1))
 ```
 
 ```elixir
+# trainning again 
+
 key = Nx.Random.key(0)
 trained_params = SGD.train(train_data, 10, key)
 SGD.evaluate(trained_params, test_data)
