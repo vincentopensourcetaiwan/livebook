@@ -11,3 +11,20 @@ Mix.install([
 ```elixir
 
 ```
+
+```elixir
+key = Nx.Random.key(42)
+{true_params, new_key} = Nx.Random.uniform(key, shape: {32, 1})
+
+true_function = fn params, x -> 
+  Nx.dot(x, params) 
+end  
+
+{train_x, new_key} = Nx.Random.uniform(new_key, shape: {10000, 32})
+train_y = true_function.(true_params, train_x)
+train_data = Enum.zip(Nx.to_batched(train_x, 1), Nx.to_batched(train_y, 1))  
+
+{test_x, new_key} = Nx.Random.uniform(new_key, shape: {10000, 32}) 
+test_y = true_function.(true_params, test_x) 
+test_data = Enum.zip(Nx.to_batched(test_x, 1), Nx.to_batched(test_y, 1))
+```
