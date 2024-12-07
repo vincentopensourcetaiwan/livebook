@@ -1,4 +1,4 @@
-# Machine Learning in Elixir Chapter 04
+# Machine Learning in Elixir Chapter 04 Concept
 
 ## Section
 
