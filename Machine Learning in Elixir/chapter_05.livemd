@@ -1,0 +1,82 @@
+# Machine Learning in Elixir Chapter 05
+
+```elixir
+Mix.install([
+  {:scholar, "~> 0.2"},
+  {:nx, "~> 0.5"},
+  {:exla, "~> 0.5"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"},
+  {:scidata, "~> 0.1"}
+])
+```
+
+## Section
+
+```elixir
+Nx.default_backend(EXLA.Backend)
+Nx.Defn.default_options(compiler: EXLA)
+```
+
+```elixir
+m = :rand.uniform() * 10
+b = :rand.uniform() * 10
+
+key = Nx.Random.key(42)
+size = 100
+{x, new_key} = Nx.Random.normal(key, 0.0, 1.0, shape: {size, 1})
+{noise_x, new_key} = Nx.Random.normal(new_key, 0.0, 1.0, shape: {size, 1})
+
+y = 
+  m
+  |> Nx.multiply(Nx.add(x, noise_x))
+  |> Nx.add(b)
+```
+
+```elixir
+alias VegaLite, as: Vl
+
+Vl.new(title: "Scatterplot", width: 720, height: 480)
+|> Vl.data_from_values(%{
+  x: Nx.to_flat_list(x),
+  y: Nx.to_flat_list(y)
+})
+|> Vl.mark(:point)
+|> Vl.encode_field(:x, "x", type: :quantitative)
+|> Vl.encode_field(:y, "y", type: :quantitative)
+```
+
+```elixir
+model = Scholar.Linear.LinearRegression.fit(x, y)
+```
+
+```elixir
+Scholar.Linear.LinearRegression.predict(model, Nx.iota({3, 1}))
+```
+
+```elixir
+pred_xs = Nx.linspace(-3.0, 3.0, n: 100) |> Nx.new_axis(-1)
+pred_ys = Scholar.Linear.LinearRegression.predict(model, pred_xs)
+```
+
+```elixir
+title = "Scatterplot Distribution and Fit Curve"
+
+Vl.new(title: title, width: 720, height: 480)
+|> Vl.data_from_values(%{
+  x: Nx.to_flat_list(x),
+  y: Nx.to_flat_list(y),
+  pred_x: Nx.to_flat_list(pred_xs),
+  pred_y: Nx.to_flat_list(pred_ys)
+})
+|> Vl.layers([
+  Vl.new()
+  |> Vl.mark(:point)
+  |> Vl.encode_field(:x, "x", type: :quantitative)
+  |> Vl.encode_field(:y, "y", type: :quantitative),
+  Vl.new()
+  |> Vl.mark(:line)
+  |> Vl.encode_field(:x, "pred_x", type: :quantitative)
+  |> Vl.encode_field(:y, "pred_y", type: :quantitative)
+])
+```
