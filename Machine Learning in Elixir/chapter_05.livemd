@@ -80,3 +80,44 @@ Vl.new(title: title, width: 720, height: 480)
   |> Vl.encode_field(:y, "pred_y", type: :quantitative)
 ])
 ```
+
+```elixir
+{inputs, targets} = Scidata.Wine.download()
+```
+
+```elixir
+{train, test} = 
+  inputs   
+  |> Enum.zip(targets)   
+  |> Enum.shuffle()   
+  |> Enum.split(floor(length(inputs) * 0.8))
+
+{train_inputs, train_targets} = Enum.unzip(train) 
+train_inputs = Nx.tensor(train_inputs) 
+train_targets = Nx.tensor(train_targets)  
+
+{test_inputs, test_targets} = Enum.unzip(test) 
+test_inputs = Nx.tensor(test_inputs) 
+test_targets = Nx.tensor(test_targets)
+```
+
+```elixir
+train_inputs = Scholar.Preprocessing.min_max_scale(train_inputs)
+test_inputs = Scholar.Preprocessing.min_max_scale(test_inputs)
+```
+
+```elixir
+model = Scholar.Linear.LogisticRegression.fit(
+  train_inputs, 
+  train_targets, 
+  num_classes: 3
+)
+```
+
+```elixir
+test_preds = Scholar.Linear.LogisticRegression.predict(model, test_inputs)
+```
+
+```elixir
+Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
+```
