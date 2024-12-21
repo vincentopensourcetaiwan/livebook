@@ -153,3 +153,11 @@ model = Scholar.Neighbors.KNearestNeighbors.fit(
   num_classes: 3
 )
 ```
+
+```elixir
+test_preds = Scholar.Neighbors.KNearestNeighbors.predict(model, test_inputs)
+```
+
+```elixir
+Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
+```
