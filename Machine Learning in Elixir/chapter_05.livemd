@@ -165,3 +165,7 @@ Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
 ```elixir
 Scholar.Metrics.Classification.confusion_matrix(test_targets, test_preds, num_classes: 3)
 ```
+
+```elixir
+model = Scholar.Cluster.KMeans.fit(train_inputs, num_clusters: 3)
+```
