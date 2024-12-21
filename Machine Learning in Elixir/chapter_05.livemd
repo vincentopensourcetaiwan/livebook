@@ -169,3 +169,40 @@ Scholar.Metrics.Classification.confusion_matrix(test_targets, test_preds, num_cl
 ```elixir
 model = Scholar.Cluster.KMeans.fit(train_inputs, num_clusters: 3)
 ```
+
+```elixir
+wine_features = %{
+  "feature_1" => train_inputs[[.., 1]] |> Nx.to_flat_list(),
+  "feature_2" => train_inputs[[.., 2]] |> Nx.to_flat_list(),
+  "class" => train_targets |> Nx.to_flat_list()
+}
+
+coords = [
+  cluster_feature_1: model.clusters[[.., 1]] |> Nx.to_flat_list(),
+  cluster_feature_2: model.clusters[[.., 2]] |> Nx.to_flat_list()
+]
+
+title = "Scatterplot of data samples projected on plane wine feature 1 x wine feature 2"
+
+Vl.new(
+  width: 1440,
+  height: 1080,
+  title: [
+    text: title,
+    offset: 25
+  ]
+)
+|> Vl.layers([
+  Vl.new()
+  |> Vl.data_from_values(wine_features)
+  |> Vl.mark(:circle)
+  |> Vl.encode_field(:x, "feature_1", type: :quantitative)
+  |> Vl.encode_field(:y, "feature_2", type: :quantitative)
+  |> Vl.encode_field(:color, "class"),
+  Vl.new()
+  |> Vl.data_from_values(coords)
+  |> Vl.mark(:circle, color: :green, size: 100)
+  |> Vl.encode_field(:x, "cluster_feature_1", type: :quantitative)
+  |> Vl.encode_field(:y, "cluster_feature_2", type: :quantitative)
+])
+```
