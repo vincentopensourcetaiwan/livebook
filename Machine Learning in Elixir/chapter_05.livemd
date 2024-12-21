@@ -121,3 +121,27 @@ test_preds = Scholar.Linear.LogisticRegression.predict(model, test_inputs)
 ```elixir
 Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
 ```
+
+```elixir
+Scholar.Metrics.Classification.confusion_matrix(
+  test_targets,
+  test_preds,
+  num_classes: 3
+)
+```
+
+```elixir
+Vl.new(
+  title: "Confusion Matrix",
+  width: 1440,
+  height: 1080
+)
+|> Vl.data_from_values(%{
+  predicted: Nx.to_flat_list(test_preds),
+  actual: Nx.to_flat_list(test_targets)
+})
+|> Vl.mark(:rect)
+|> Vl.encode_field(:x, "predicted")
+|> Vl.encode_field(:y, "actual")
+|> Vl.encode(:color, aggregate: :count)
+```
