@@ -145,3 +145,11 @@ Vl.new(
 |> Vl.encode_field(:y, "actual")
 |> Vl.encode(:color, aggregate: :count)
 ```
+
+```elixir
+model = Scholar.Neighbors.KNearestNeighbors.fit(
+  train_inputs, 
+  train_targets, 
+  num_classes: 3
+)
+```
