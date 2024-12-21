@@ -206,3 +206,11 @@ Vl.new(
   |> Vl.encode_field(:y, "cluster_feature_2", type: :quantitative)
 ])
 ```
+
+```elixir
+test_preds = Scholar.Cluster.KMeans.predict(model, test_inputs)
+```
+
+```elixir
+Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
+```
