@@ -161,3 +161,7 @@ test_preds = Scholar.Neighbors.KNearestNeighbors.predict(model, test_inputs)
 ```elixir
 Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
 ```
+
+```elixir
+Scholar.Metrics.Classification.confusion_matrix(test_targets, test_preds, num_classes: 3)
+```
