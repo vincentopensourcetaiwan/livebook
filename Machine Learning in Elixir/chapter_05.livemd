@@ -2,7 +2,7 @@
 
 ```elixir
 Mix.install([
-  {:scholar, "~> 0.2"},
+  {:scholar, "~> 0.2.0"},
   {:nx, "~> 0.5"},
   {:exla, "~> 0.5"},
   {:vega_lite, "~> 0.1.6"},
