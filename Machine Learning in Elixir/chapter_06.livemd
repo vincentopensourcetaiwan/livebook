@@ -21,5 +21,23 @@ defmodule NeuralNetwork do
   defn activation(input) do
     Nx.sigmoid(input)
   end
+
+  defn hidden(input, weight, bias) do
+    input
+    |> dense(weight, bias)
+    |> activation()
+  end
+
+  defn output(input, weight, bias) do
+    input
+    |> dense(weight, bias)
+    |> activation()
+  end
+
+  defn predict(input, w1, b1, w2, b2) do
+    input
+    |> hidden(w1, b1)
+    |> output(w2, b2)
+  end
 end
 ```
