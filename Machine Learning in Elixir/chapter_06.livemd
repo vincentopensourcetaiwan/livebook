@@ -41,3 +41,16 @@ defmodule NeuralNetwork do
   end
 end
 ```
+
+```elixir
+key = Nx.Random.key(42)
+{w1, new_key} = Nx.Random.uniform(key)
+{b1, new_key} = Nx.Random.uniform(new_key)
+{w2, new_key} = Nx.Random.uniform(new_key)
+{b2, new_key} = Nx.Random.uniform(new_key)
+```
+
+```elixir
+Nx.Random.uniform_split(new_key, 0, 1, shape: {})
+|> NeuralNetwork.predict(w1, b1, w2, b2)
+```
