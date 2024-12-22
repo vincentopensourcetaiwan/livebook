@@ -1,0 +1,18 @@
+# Machine Learning in Elixir Chapter 06 - 02
+
+```elixir
+Mix.install([
+  {:axon, "~> 0.5"},
+  {:nx, "~> 0.5"},
+  {:exla, "~> 0.5"},
+  {:scidata, "~> 0.1"},
+  {:kino, "~> 0.8"},
+  {:table_rex, "~> 3.1.1"}
+])
+```
+
+## Section
+
+```elixir
+
+```
