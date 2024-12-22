@@ -1,0 +1,25 @@
+# Machine Learning in Elixir Chapter 06
+
+```elixir
+Mix.install([
+  {:nx, "~> 0.5"}
+])
+```
+
+## Section
+
+```elixir
+defmodule NeuralNetwork do
+  import Nx.Defn
+
+  defn dense(input, weight, bias) do
+    input
+    |> Nx.dot(weight)
+    |> Nx.add(bias)
+  end
+
+  defn activation(input) do
+    Nx.sigmoid(input)
+  end
+end
+```
