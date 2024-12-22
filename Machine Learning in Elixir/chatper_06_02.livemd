@@ -125,3 +125,7 @@ probabilities =
   |> Nx.new_axis(0)
   |> then(&predict_fn.(trained_model_state, &1))
 ```
+
+```elixir
+probabilities |> Nx.argmax()
+```
