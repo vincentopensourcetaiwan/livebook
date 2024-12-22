@@ -14,5 +14,59 @@ Mix.install([
 ## Section
 
 ```elixir
+Nx.default_backend(EXLA.Backend)
+```
 
+```elixir
+{images, labels} = Scidata.MNIST.download()
+```
+
+```elixir
+{image_data, image_type, image_shape} = images
+{label_data, label_type, label_shape} = labels
+
+images =
+  image_data
+  |> Nx.from_binary(image_type)
+  |> Nx.divide(255)
+  |> Nx.reshape({60000, :auto})
+
+labels =
+  label_data
+  |> Nx.from_binary(label_type)
+  |> Nx.reshape(label_shape)
+  |> Nx.new_axis(-1)
+  |> Nx.equal(Nx.iota({1, 10}))
+```
+
+```elixir
+train_range = 0..49_999//1
+test_range = 50_000..-1//1
+
+train_images = images[train_range]
+train_labels = labels[train_range]
+
+test_images = images[test_range]
+test_labels = labels[test_range]
+```
+
+```elixir
+batch_size = 64
+
+train_data =
+  train_images
+  |> Nx.to_batched(batch_size)
+  |> Stream.zip(Nx.to_batched(train_labels, batch_size))
+
+test_data =
+  test_images
+  |> Nx.to_batched(batch_size)
+  |> Stream.zip(Nx.to_batched(test_labels, batch_size))
+```
+
+```elixir
+model =
+  Axon.input("images", shape: {nil, 784})
+  |> Axon.dense(128, activation: :relu)
+  |> Axon.dense(10, activation: :softmax)
 ```
