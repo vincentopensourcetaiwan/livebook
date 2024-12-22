@@ -75,3 +75,12 @@ model =
 template = Nx.template({1, 784}, :f32)
 Axon.Display.as_graph(model, template)
 ```
+
+```elixir
+# Axon.Display.as_table(model, template)
+# |>IO.puts
+```
+
+```elixir
+IO.inspect model, structs: false
+```
