@@ -70,3 +70,8 @@ model =
   |> Axon.dense(128, activation: :relu)
   |> Axon.dense(10, activation: :softmax)
 ```
+
+```elixir
+template = Nx.template({1, 784}, :f32)
+Axon.Display.as_graph(model, template)
+```
