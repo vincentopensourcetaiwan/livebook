@@ -1,4 +1,4 @@
-# Machine Learning in Elixir Chapter 06
+# Machine Learning in Elixir Chapter 06 - 01
 
 ```elixir
 Mix.install([
