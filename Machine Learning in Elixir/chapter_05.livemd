@@ -38,13 +38,15 @@ size = 100
 {x, new_key} = Nx.Random.normal(key, 0.0, 1.0, shape: {size, 1})
 {noise_x, new_key} = Nx.Random.normal(new_key, 0.0, 1.0, shape: {size, 1})
 
-y = 
+y =
   m
   |> Nx.multiply(Nx.add(x, noise_x))
   |> Nx.add(b)
 ```
 
 ```elixir
+# visualize the training data
+
 alias VegaLite, as: Vl
 
 Vl.new(title: "Scatterplot", width: 720, height: 480)
@@ -58,19 +60,28 @@ Vl.new(title: "Scatterplot", width: 720, height: 480)
 ```
 
 ```elixir
+# create a linear regression model
+
 model = Scholar.Linear.LinearRegression.fit(x, y)
 ```
 
 ```elixir
+# use the model to predict 
+
 Scholar.Linear.LinearRegression.predict(model, Nx.iota({3, 1}))
 ```
 
 ```elixir
+# try to draw model overlay training data
+# 
+
 pred_xs = Nx.linspace(-3.0, 3.0, n: 100) |> Nx.new_axis(-1)
 pred_ys = Scholar.Linear.LinearRegression.predict(model, pred_xs)
 ```
 
 ```elixir
+# 
+
 title = "Scatterplot Distribution and Fit Curve"
 
 Vl.new(title: title, width: 720, height: 480)
