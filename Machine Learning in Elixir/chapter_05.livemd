@@ -1,6 +1,12 @@
 # Machine Learning in Elixir Chapter 05
 
 ```elixir
+# scholar: traditional machine learning tools
+# nx: array operation
+# exla: Google's XLA (Accelerated Linear Algebra) compiler/backend for Nx
+# kino_vega_lite: draw graph in livebook
+# scidata: dataset
+
 Mix.install([
   {:scholar, "~> 0.2.0"},
   {:nx, "~> 0.5"},
@@ -14,11 +20,16 @@ Mix.install([
 ## Section
 
 ```elixir
+# setup default backend
+# setup default compiler
+
 Nx.default_backend(EXLA.Backend)
 Nx.Defn.default_options(compiler: EXLA)
 ```
 
 ```elixir
+# create training data
+
 m = :rand.uniform() * 10
 b = :rand.uniform() * 10
 
