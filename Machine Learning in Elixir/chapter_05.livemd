@@ -103,6 +103,8 @@ Vl.new(title: title, width: 720, height: 480)
 ```
 
 ```elixir
+# download data
+
 {inputs, targets} = Scidata.Wine.download()
 ```
 
