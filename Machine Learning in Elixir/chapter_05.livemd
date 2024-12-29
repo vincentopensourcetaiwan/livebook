@@ -138,7 +138,7 @@ test_inputs = Scholar.Preprocessing.min_max_scale(test_inputs)
 ```
 
 ```elixir
-# training the model
+# training the model with LogisticRegression algorithm
 
 model = Scholar.Linear.LogisticRegression.fit(
   train_inputs, 
@@ -188,6 +188,8 @@ Vl.new(
 ```
 
 ```elixir
+# training the model with KNearestNeighbors algorithm
+
 model = Scholar.Neighbors.KNearestNeighbors.fit(
   train_inputs, 
   train_targets, 
@@ -196,22 +198,32 @@ model = Scholar.Neighbors.KNearestNeighbors.fit(
 ```
 
 ```elixir
+# use the model to predict
+
 test_preds = Scholar.Neighbors.KNearestNeighbors.predict(model, test_inputs)
 ```
 
 ```elixir
+# evaluate the model accuracy
+
 Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
 ```
 
 ```elixir
+# evaluate the model with confusion_matrix
+
 Scholar.Metrics.Classification.confusion_matrix(test_targets, test_preds, num_classes: 3)
 ```
 
 ```elixir
+# train a model with KMeans algorithm
+
 model = Scholar.Cluster.KMeans.fit(train_inputs, num_clusters: 3)
 ```
 
 ```elixir
+# visualize the training result
+
 wine_features = %{
   "feature_1" => train_inputs[[.., 1]] |> Nx.to_flat_list(),
   "feature_2" => train_inputs[[.., 2]] |> Nx.to_flat_list(),
@@ -249,9 +261,13 @@ Vl.new(
 ```
 
 ```elixir
+# use the mode to do prediction
+
 test_preds = Scholar.Cluster.KMeans.predict(model, test_inputs)
 ```
 
 ```elixir
+# find the model accuracy
+
 Scholar.Metrics.Classification.accuracy(test_targets, test_preds)
 ```
