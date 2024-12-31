@@ -8,7 +8,7 @@ Mix.install([
 ])
 ```
 
-## Section
+## boilerplate neural network
 
 ```elixir
 # define a neural network module
