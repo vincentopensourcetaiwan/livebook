@@ -1,6 +1,7 @@
 # Machine Learning in Elixir Chapter 06 - 02
 
 ```elixir
+# setup library to use
 Mix.install([
   {:axon, "~> 0.5"},
   {:nx, "~> 0.5"},
