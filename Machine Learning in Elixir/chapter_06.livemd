@@ -1,6 +1,8 @@
 # Machine Learning in Elixir Chapter 06 - 01
 
 ```elixir
+# use nx 
+
 Mix.install([
   {:nx, "~> 0.5"}
 ])
@@ -9,6 +11,8 @@ Mix.install([
 ## Section
 
 ```elixir
+# define a neural network module
+
 defmodule NeuralNetwork do
   import Nx.Defn
 
@@ -43,6 +47,8 @@ end
 ```
 
 ```elixir
+# generate data
+
 key = Nx.Random.key(42)
 {w1, new_key} = Nx.Random.uniform(key)
 {b1, new_key} = Nx.Random.uniform(new_key)
@@ -51,6 +57,8 @@ key = Nx.Random.key(42)
 ```
 
 ```elixir
+# make a prediction
+
 Nx.Random.uniform_split(new_key, 0, 1, shape: {})
 |> NeuralNetwork.predict(w1, b1, w2, b2)
 ```
