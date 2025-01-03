@@ -15,14 +15,20 @@ Mix.install([
 ## Section
 
 ```elixir
+# setup default backend compiler
+
 Nx.default_backend(EXLA.Backend)
 ```
 
 ```elixir
+# download dataset 
+
 {images, labels} = Scidata.MNIST.download()
 ```
 
 ```elixir
+# convert the data to NX tensor
+
 {image_data, image_type, image_shape} = images
 {label_data, label_type, label_shape} = labels
 
