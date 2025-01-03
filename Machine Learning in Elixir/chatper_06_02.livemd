@@ -60,6 +60,8 @@ test_labels = labels[test_range]
 ```
 
 ```elixir
+# seperate dataset into batch
+
 batch_size = 64
 
 train_data =
@@ -74,6 +76,8 @@ test_data =
 ```
 
 ```elixir
+# define model
+
 model =
   Axon.input("images", shape: {nil, 784})
   |> Axon.dense(128, activation: :relu)
@@ -81,16 +85,22 @@ model =
 ```
 
 ```elixir
+# visualize the model
+
 template = Nx.template({1, 784}, :f32)
 Axon.Display.as_graph(model, template)
 ```
 
 ```elixir
+# display the model as a table
+
 # Axon.Display.as_table(model, template)
 # |>IO.puts
 ```
 
 ```elixir
+# inspect the model
+
 IO.inspect model, structs: false
 ```
 
