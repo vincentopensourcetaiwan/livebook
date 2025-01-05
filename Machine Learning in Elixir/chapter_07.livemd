@@ -41,7 +41,9 @@ end
 ```elixir
 train_path = Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
 
-CatsAndDogs.pipeline(train_path)
+train_pipeline = CatsAndDogs.pipeline(train_path)
+
+Enum.take(train_pipeline, 5)
 ```
 
-<!-- livebook:{"offset":957,"stamp":{"token":"XCP.mtZCB0KBydFphlJDr5A3nivK7MKgEuBsWbrMk7gzBz5zfpLX94ogHeIYiZcf0K4tGJQ6xI1r3vYY1T5EDyH33MtG98iTkp3EYWxZ-w","version":2}} -->
+<!-- livebook:{"offset":1004,"stamp":{"token":"XCP.OkopAnp781-Q3Lz00MldbkYLBo37NuafPPBagpRy9G9upHgC84QW--2jkGHv1GqDdIgNMWB2dPk6n0PBrxUZVMsz00nolxBrDqEYCw","version":2}} -->
