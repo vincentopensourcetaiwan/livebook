@@ -21,9 +21,19 @@ Nx.global_default_backend(EXLA.Backend)
 
 ```elixir
 defmodule CatsAndDogs do
+  defp parse_image(path) do
+    label = if String.contains?(path, "cat"), do: 0, else: 1
+
+    case StbImage.read_file(path) do
+      {:ok, img} -> {img, label}
+      _error -> :error
+    end
+  end
+
   def pipeline(paths) do
     paths
     |> Enum.shuffle()
+    |> Task.async_stream(&parse_image/1)
   end
 end
 ```
@@ -34,4 +44,4 @@ train_path = Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning
 CatsAndDogs.pipeline(train_path)
 ```
 
-<!-- livebook:{"offset":718,"stamp":{"token":"XCP.pEo-DPeui1hK7sC9s7-musTli628hqmo0aBh2vab5ud3J24nsxl4NjOMeL6UCGanKU2uQqRYX43a3chVmkXNoRATyMj8dtx3BSypgQ","version":2}} -->
+<!-- livebook:{"offset":957,"stamp":{"token":"XCP.mtZCB0KBydFphlJDr5A3nivK7MKgEuBsWbrMk7gzBz5zfpLX94ogHeIYiZcf0K4tGJQ6xI1r3vYY1T5EDyH33MtG98iTkp3EYWxZ-w","version":2}} -->
