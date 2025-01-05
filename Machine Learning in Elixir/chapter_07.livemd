@@ -1,0 +1,18 @@
+# Machine Learning in Elixir Chapter 07
+
+```elixir
+Mix.install([
+  {:axon, "~> 0.5"},
+  {:nx, "~> 0.5"},
+  {:exla, "~> 0.5"},
+  {:stb_image, "~> 0.6"},
+  {:kino, "~> 0.8"}
+])
+
+```
+
+## Section
+
+```elixir
+
+```

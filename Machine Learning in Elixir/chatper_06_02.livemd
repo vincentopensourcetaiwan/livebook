@@ -132,7 +132,7 @@ model
 ```elixir
 # get the first image of test data
 
-test_image = test_batch[0]
+test_image = test_batch[9]
 ```
 
 ```elixir
