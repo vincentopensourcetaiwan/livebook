@@ -30,22 +30,41 @@ defmodule CatsAndDogs do
     end
   end
 
-  def pipeline(paths) do
+  defp to_tensors({:ok, {img, label}}, target_height, target_width) do
+    img_tensor =
+      img
+      |> StbImage.resize(target_height, target_width)
+      |> StbImage.to_nx()
+      |> Nx.divide(255)
+
+    label_tensor = Nx.tensor([label])
+
+    {img_tensor, label_tensor}
+  end
+
+  def pipeline(paths, target_height, target_width) do
     paths
     |> Enum.shuffle()
     |> Task.async_stream(&parse_image/1)
+    |> Stream.filter(fn
+      {:ok, {%StbImage{}, _}} -> true
+      _ -> false
+    end)
+    |> Stream.map(&to_tensors(&1, target_height, target_width))
   end
 end
 ```
 
 ```elixir
-file_path = "/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg"
+train_path =
+  Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
 
-train_path = Path.wildcard(file_path)
+target_height = 96
+target_width = 96
 
-train_pipeline = CatsAndDogs.pipeline(train_path)
+train_pipeline = CatsAndDogs.pipeline(train_path, target_height, target_width)
 
 Enum.take(train_pipeline, 5)
 ```
 
-<!-- livebook:{"offset":1027,"stamp":{"token":"XCP.txsGjLPe6Kp02JY-eVn5fH7CEx79dAx9x8UDJP2o67d5oy2TtvCFHzq0kXb7W3qnu-Q3JBCKL5qIJZPmBdsXSHh9lKVMnFw2E11QlQ","version":2}} -->
+<!-- livebook:{"offset":1534,"stamp":{"token":"XCP.weyVnaNgTYpM9m1oicwpLGtjJ146e0f9kZVEPi3DncoCL5xUv_02K8SaG0Hhyaih3Z0bwb7RQE-4PoeaupjKCDKXWRQfftUCYo1VlQ","version":2}} -->
