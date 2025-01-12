@@ -106,4 +106,4 @@ mlp_model
 |> Axon.Loop.run(test_pipeline, mlp_trained_model_state, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":2544,"stamp":{"token":"XCP.IPfwceftEBkyM2M2n7RVPqkgZpZgqhTqaD3maLJKrf_0FuKyenOQvZ3HCuhyiGF21FDKbK1aYeWH7y6i0TrOM2fIHfGEq1d4ABAL2Q","version":2}} -->
+<!-- livebook:{"offset":2544,"stamp":{"token":"XCP.Uu7o6Uu8Pah3xzBZOZdFqI04uves-U3WzZBgKCluC6Vd5wxsZ4EZX3ja9nPz-d6KRqzRpp6FQyzuKInc2xE4eVuwA_jmz0HpkEO7oA","version":2}} -->
