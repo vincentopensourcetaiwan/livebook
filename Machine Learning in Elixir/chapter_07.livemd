@@ -10,7 +10,6 @@ Mix.install([
   {:stb_image, "~> 0.6"},
   {:kino, "~> 0.8"}
 ])
-
 ```
 
 ## Section
@@ -20,6 +19,45 @@ Nx.global_default_backend(EXLA.Backend)
 ```
 
 ```elixir
+# defmodule CatsAndDogs do
+#   defp parse_image(path) do
+#     label = if String.contains?(path, "cat"), do: 0, else: 1
+
+#     case StbImage.read_file(path) do
+#       {:ok, img} -> {img, label}
+#       _error -> :error
+#     end
+#   end
+
+#   defp to_tensors({:ok, {img, label}}, target_height, target_width) do
+#     img_tensor =
+#       img
+#       |> StbImage.resize(target_height, target_width)
+#       |> StbImage.to_nx()
+#       |> Nx.divide(255)
+
+#     label_tensor = Nx.tensor([label])
+
+#     {img_tensor, label_tensor}
+#   end
+
+#   def pipeline(paths, batch_size, target_height, target_width) do
+#     paths
+#     |> Enum.shuffle()
+#     |> Task.async_stream(&parse_image/1)
+#     |> Stream.filter(fn
+#       {:ok, {%StbImage{}, _}} -> true
+#       _ -> false
+#     end)
+#     |> Stream.map(&to_tensors(&1, target_height, target_width))
+#     |> Stream.chunk_every(batch_size, batch_size, :discard)
+#     |> Stream.map(fn chunks ->
+#       {img_chunk, label_chunk} = Enum.unzip(chunks)
+#       {Nx.stack(img_chunk), Nx.stack(label_chunk)}
+#     end)
+#   end
+# end
+
 defmodule CatsAndDogs do
   defp parse_image(path) do
     label = if String.contains?(path, "cat"), do: 0, else: 1
@@ -36,6 +74,24 @@ defmodule CatsAndDogs do
       |> StbImage.resize(target_height, target_width)
       |> StbImage.to_nx()
       |> Nx.divide(255)
+
+    # Ensure the image has 3 channels
+    img_tensor =
+      case Nx.shape(img_tensor) do
+        {^target_height, ^target_width, 3} ->
+          img_tensor
+
+        # Drop alpha channel
+        {^target_height, ^target_width, 4} ->
+          img_tensor[[.., .., 0..2]]
+
+        # Convert grayscale to RGB
+        {^target_height, ^target_width, 1} ->
+          Nx.broadcast(img_tensor, {target_height, target_width, 3})
+
+        _ ->
+          raise "Unexpected image shape"
+      end
 
     label_tensor = Nx.tensor([label])
 
@@ -198,4 +254,4 @@ cnn_model
 |> Axon.Loop.run(test_pipeline, cnn_trained_model_state, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":4397,"stamp":{"token":"XCP.69hA91jkMBqK98N3zF-sl9bFS6UyZYLDdbDNR6KqylrP15QihhfJYQ1vvTvjPYKzhVqX-jw1oCrrSjXRqpCpLhXHay-LjmqYsTPzpg","version":2}} -->
+<!-- livebook:{"offset":5957,"stamp":{"token":"XCP.7_0rhMzpnftd5hvDqG2hiM_w-vgHq6CIn0w3w2eJaJC7EoRRgmHYPGIGoz1j3MV5Ajpo8WCtG_eqDZNZZbU_nwGERBBskEqPWJp-bA","version":2}} -->
