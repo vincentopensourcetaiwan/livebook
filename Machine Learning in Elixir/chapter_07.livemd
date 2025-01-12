@@ -42,7 +42,7 @@ defmodule CatsAndDogs do
     {img_tensor, label_tensor}
   end
 
-  def pipeline(paths, target_height, target_width) do
+  def pipeline(paths, batch_size, target_height, target_width) do
     paths
     |> Enum.shuffle()
     |> Task.async_stream(&parse_image/1)
@@ -51,20 +51,38 @@ defmodule CatsAndDogs do
       _ -> false
     end)
     |> Stream.map(&to_tensors(&1, target_height, target_width))
+    |> Stream.chunk_every(batch_size, batch_size, :discard)
+    |> Stream.map(fn chunks ->
+      {img_chunk, label_chunk} = Enum.unzip(chunks)
+      {Nx.stack(img_chunk), Nx.stack(label_chunk)}
+    end)
   end
 end
 ```
 
 ```elixir
-train_path =
+{test_paths, train_paths} = 
   Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
+  |> Enum.shuffle()
+  |> Enum.split(1000)
 
+batch_size = 128
 target_height = 96
 target_width = 96
 
-train_pipeline = CatsAndDogs.pipeline(train_path, target_height, target_width)
+train_pipeline = CatsAndDogs.pipeline(
+  train_paths, batch_size, target_height, target_width
+)
+test_pipeline = CatsAndDogs.pipeline(
+  test_paths, batch_size, target_height, target_width
+)
 
-Enum.take(train_pipeline, 5)
+Enum.take(train_pipeline, 1)
 ```
 
-<!-- livebook:{"offset":1534,"stamp":{"token":"XCP.weyVnaNgTYpM9m1oicwpLGtjJ146e0f9kZVEPi3DncoCL5xUv_02K8SaG0Hhyaih3Z0bwb7RQE-4PoeaupjKCDKXWRQfftUCYo1VlQ","version":2}} -->
+```elixir
+
+
+```
+
+<!-- livebook:{"offset":1952,"stamp":{"token":"XCP.ELiFPhAETgKvpqMTjSXZmRXE-JtZrMlc4hq9YWzG5u2GaGZmEhlQYNPVK3f3_zR2ku5Vh9KIjPDEu3VrlBtMVAma3Et8lvGbJk_PMg","version":2}} -->
