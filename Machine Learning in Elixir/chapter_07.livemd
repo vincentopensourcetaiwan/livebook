@@ -191,4 +191,11 @@ cnn_trained_model_state =
   |> Axon.Loop.run(train_pipeline, %{}, epochs: 5, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":4243,"stamp":{"token":"XCP.EceAFlxJtkboDrgiT6o68p7tmYh-HMyz5pLz1knJrfKGOCJ8KvuQa0cjaUSARwZXVLjnG04uaw45mxcnat4d8puAH9z9X_Y5j-GauQ","version":2}} -->
+```elixir
+cnn_model
+|> Axon.Loop.evaluator()
+|> Axon.Loop.metric(:accuracy)
+|> Axon.Loop.run(test_pipeline, cnn_trained_model_state, compiler: EXLA)
+```
+
+<!-- livebook:{"offset":4397,"stamp":{"token":"XCP.2jb1wIYSNXV4lJwFLDvSKgxJtsGJN1FE2b7-iUTd6E9WEKcFK0hzCZLQLsGxZvzh7a2srdG68Fx6J0qzS0wAaLyjbMR8igwtyhm7kQ","version":2}} -->
