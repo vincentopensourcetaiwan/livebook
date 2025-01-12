@@ -142,4 +142,18 @@ template = Nx.template({1, 96, 96, 3}, :f32)
 Axon.Display.as_graph(cnn_model, template)
 ```
 
-<!-- livebook:{"offset":3246,"stamp":{"token":"XCP.lNjYVvHBcCayV-uchXpIsnheM7tIoTjo7d3GO88k4pQ68zEs3oFSrodgz1wcOuLdp-Xn8V8UGi-64gAJ3L0rncOk6o8VQRTSawFiyw","version":2}} -->
+```elixir
+cnn_model =
+  cnn_model
+  |> Axon.conv(32,
+      kernel_size: {3, 3},
+      padding: :same,
+      activation: :relu
+  )
+```
+
+```elixir
+Axon.Display.as_graph(cnn_model, template)
+```
+
+<!-- livebook:{"offset":3439,"stamp":{"token":"XCP.zF8uF2AChK6RBkoZVlyU8lr0zkqZvbBgI20h8touT_s_XerUyp9IA-2tOXS9Ak3VRabYhe9FLOuNzA4ofhk5GWiTqka2WErD0LYExw","version":2}} -->
