@@ -156,4 +156,39 @@ cnn_model =
 Axon.Display.as_graph(cnn_model, template)
 ```
 
-<!-- livebook:{"offset":3439,"stamp":{"token":"XCP.zF8uF2AChK6RBkoZVlyU8lr0zkqZvbBgI20h8touT_s_XerUyp9IA-2tOXS9Ak3VRabYhe9FLOuNzA4ofhk5GWiTqka2WErD0LYExw","version":2}} -->
+```elixir
+cnn_model =
+  cnn_model
+  |> Axon.max_pool(kernel_size: {2, 2}, strides: [2, 2])
+```
+
+```elixir
+Axon.Display.as_graph(cnn_model, template)
+```
+
+```elixir
+cnn_model =
+  cnn_model
+  |> Axon.conv(64, kernel_size: {3, 3}, activation: :relu, padding: :same)
+  |> Axon.max_pool(kernel_size: {2, 2}, strides: [2, 2])
+  |> Axon.conv(128, kernel_size: {3, 3}, activation: :relu, padding: :same)
+  |> Axon.max_pool(kernel_size: {2, 2}, strides: [2, 2])
+```
+
+```elixir
+cnn_model =
+  cnn_model
+  |> Axon.flatten()
+  |> Axon.dense(128, activation: :relu)
+  |> Axon.dense(1, activation: :sigmoid)
+```
+
+```elixir
+cnn_trained_model_state =
+  cnn_model
+  |> Axon.Loop.trainer(:binary_cross_entropy, :adam)
+  |> Axon.Loop.metric(:accuracy)
+  |> Axon.Loop.run(train_pipeline, %{}, epochs: 5, compiler: EXLA)
+```
+
+<!-- livebook:{"offset":4243,"stamp":{"token":"XCP.EceAFlxJtkboDrgiT6o68p7tmYh-HMyz5pLz1knJrfKGOCJ8KvuQa0cjaUSARwZXVLjnG04uaw45mxcnat4d8puAH9z9X_Y5j-GauQ","version":2}} -->
