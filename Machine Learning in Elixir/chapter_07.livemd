@@ -80,6 +80,8 @@ test_pipeline = CatsAndDogs.pipeline(
 Enum.take(train_pipeline, 1)
 ```
 
+## Section
+
 ```elixir
 mlp_model =
   Axon.input("images", shape: {nil, target_height, target_width, 3})
@@ -87,7 +89,21 @@ mlp_model =
   |> Axon.dense(256, activation: :relu)
   |> Axon.dense(128, activation: :relu)
   |> Axon.dense(1, activation: :sigmoid)
-
 ```
 
-<!-- livebook:{"offset":2173,"stamp":{"token":"XCP.AXSE0c7B-4EE6PTW6aXEn7ZCmRKCOybUfkFGunvklvx8nT9yxdjhhJaODGyZWFX7536kCKHJBP2jbWFApfDMF0NXOgSoFdnwCbjJfw","version":2}} -->
+```elixir
+mlp_trained_model_state =
+  mlp_model
+  |> Axon.Loop.trainer(:binary_cross_entropy, :adam)
+  |> Axon.Loop.metric(:accuracy)
+  |> Axon.Loop.run(train_pipeline, %{}, epochs: 5, compiler: EXLA)
+```
+
+```elixir
+mlp_model
+|> Axon.Loop.evaluator()
+|> Axon.Loop.metric(:accuracy)
+|> Axon.Loop.run(test_pipeline, mlp_trained_model_state, compiler: EXLA)
+```
+
+<!-- livebook:{"offset":2544,"stamp":{"token":"XCP.IPfwceftEBkyM2M2n7RVPqkgZpZgqhTqaD3maLJKrf_0FuKyenOQvZ3HCuhyiGF21FDKbK1aYeWH7y6i0TrOM2fIHfGEq1d4ABAL2Q","version":2}} -->
