@@ -81,8 +81,13 @@ Enum.take(train_pipeline, 1)
 ```
 
 ```elixir
-
+mlp_model =
+  Axon.input("images", shape: {nil, target_height, target_width, 3})
+  |> Axon.flatten()
+  |> Axon.dense(256, activation: :relu)
+  |> Axon.dense(128, activation: :relu)
+  |> Axon.dense(1, activation: :sigmoid)
 
 ```
 
-<!-- livebook:{"offset":1952,"stamp":{"token":"XCP.ELiFPhAETgKvpqMTjSXZmRXE-JtZrMlc4hq9YWzG5u2GaGZmEhlQYNPVK3f3_zR2ku5Vh9KIjPDEu3VrlBtMVAma3Et8lvGbJk_PMg","version":2}} -->
+<!-- livebook:{"offset":2173,"stamp":{"token":"XCP.AXSE0c7B-4EE6PTW6aXEn7ZCmRKCOybUfkFGunvklvx8nT9yxdjhhJaODGyZWFX7536kCKHJBP2jbWFApfDMF0NXOgSoFdnwCbjJfw","version":2}} -->
