@@ -132,4 +132,14 @@ img
 
 ```
 
-<!-- livebook:{"offset":3069,"stamp":{"token":"XCP.fRsxq8PutJDUM35ko0cldi8yweVlkbnCY9QCXx3j44rRt7luM2Pef4JPn-ajEbK3nQeP6Jdcxr4O2D5PK62-wNAORkSucjfP1rt35w","version":2}} -->
+```elixir
+cnn_model = Axon.input("images", shape: {nil, 96, 96, 3})
+```
+
+```elixir
+template = Nx.template({1, 96, 96, 3}, :f32)
+
+Axon.Display.as_graph(cnn_model, template)
+```
+
+<!-- livebook:{"offset":3246,"stamp":{"token":"XCP.lNjYVvHBcCayV-uchXpIsnheM7tIoTjo7d3GO88k4pQ68zEs3oFSrodgz1wcOuLdp-Xn8V8UGi-64gAJ3L0rncOk6o8VQRTSawFiyw","version":2}} -->
