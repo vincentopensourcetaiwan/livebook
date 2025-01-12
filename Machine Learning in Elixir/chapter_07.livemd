@@ -106,4 +106,30 @@ mlp_model
 |> Axon.Loop.run(test_pipeline, mlp_trained_model_state, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":2544,"stamp":{"token":"XCP.Uu7o6Uu8Pah3xzBZOZdFqI04uves-U3WzZBgKCluC6Vd5wxsZ4EZX3ja9nPz-d6KRqzRpp6FQyzuKInc2xE4eVuwA_jmz0HpkEO7oA","version":2}} -->
+```elixir
+path = "/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/dog.5.jpg"
+
+img =
+  path
+  |> StbImage.read_file!()
+  |> StbImage.to_nx()
+  |> Nx.transpose(axes: [:channels, :height, :width])
+  |> Nx.new_axis(0)
+
+kernel = Nx.tensor([
+  [-1, 0, 1],
+  [-1, 0, 1],
+  [-1, 0, 1]
+])
+kernel = kernel |> Nx.reshape({1, 1, 3, 3}) |> Nx.broadcast({3, 3, 3, 3})
+
+img
+|> Nx.conv(kernel)
+|> Nx.as_type({:u, 8})
+|> Nx.squeeze(axes: [0])
+|> Nx.transpose(axes: [:height, :width, :channels])
+|> Kino.Image.new()
+
+```
+
+<!-- livebook:{"offset":3069,"stamp":{"token":"XCP.fRsxq8PutJDUM35ko0cldi8yweVlkbnCY9QCXx3j44rRt7luM2Pef4JPn-ajEbK3nQeP6Jdcxr4O2D5PK62-wNAORkSucjfP1rt35w","version":2}} -->
