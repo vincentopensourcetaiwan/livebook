@@ -74,11 +74,60 @@ defmodule CatsAndDogs do
       {Nx.stack(img_chunk), Nx.stack(label_chunk)}
     end)
   end
+
+  def pipeline_with_augmentations(
+        paths,
+        batch_size,
+        target_height,
+        target_width
+      ) do
+    paths
+    |> Enum.shuffle()
+    |> Task.async_stream(&parse_image/1)
+    |> Stream.filter(fn
+      {:ok, {%StbImage{}, _}} -> true
+      _ -> false
+    end)
+    |> Stream.map(&to_tensors(&1, target_height, target_width))
+    |> Stream.map(&random_flip(&1, :height))
+    |> Stream.map(&random_flip(&1, :width))
+    |> Stream.chunk_every(batch_size, batch_size, :discard)
+    |> Stream.map(fn chunks ->
+      {img_chunk, label_chunk} = Enum.unzip(chunks)
+      {Nx.stack(img_chunk), Nx.stack(label_chunk)}
+    end)
+  end
+
+  defp random_flip({image, label}, axis) do
+    if :rand.uniform() < 0.5 do
+      {Nx.reverse(image, axes: [axis]), label}
+    else
+      {image, label}
+    end
+  end
 end
 ```
 
 ```elixir
-{test_paths, train_paths} = 
+# {test_paths, train_paths} = 
+#   Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
+#   |> Enum.shuffle()
+#   |> Enum.split(1000)
+
+# batch_size = 128
+# target_height = 96
+# target_width = 96
+
+# train_pipeline = CatsAndDogs.pipeline(
+#   train_paths, batch_size, target_height, target_width
+# )
+# test_pipeline = CatsAndDogs.pipeline(
+#   test_paths, batch_size, target_height, target_width
+# )
+
+# Enum.take(train_pipeline, 1)
+
+{test_paths, train_paths} =
   Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
   |> Enum.shuffle()
   |> Enum.split(1000)
@@ -87,12 +136,21 @@ batch_size = 128
 target_height = 96
 target_width = 96
 
-train_pipeline = CatsAndDogs.pipeline(
-  train_paths, batch_size, target_height, target_width
-)
-test_pipeline = CatsAndDogs.pipeline(
-  test_paths, batch_size, target_height, target_width
-)
+train_pipeline =
+  CatsAndDogs.pipeline_with_augmentations(
+    train_paths,
+    batch_size,
+    target_height,
+    target_width
+  )
+
+test_pipeline =
+  CatsAndDogs.pipeline(
+    test_paths,
+    batch_size,
+    target_height,
+    target_width
+  )
 
 Enum.take(train_pipeline, 1)
 ```
@@ -215,4 +273,4 @@ cnn_model
 |> Axon.Loop.run(test_pipeline, cnn_trained_model_state, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":4883,"stamp":{"token":"XCP.nodBy6pkzrD7X5K4GsvtJAnfjXbvDrXdou2hMLFdPJXwyKW8qgZYhN1nWHUR1l4LH1h0m7rbYRc7EzzTuchWGsdrkMQXIYd58_HWLg","version":2}} -->
+<!-- livebook:{"offset":6225,"stamp":{"token":"XCP.BXNCBVyCt8_6pOIU1ZU9mZe8JzYT633rnBku1aAshSORcfAI_WJPLEhsZWxW2O4cMVXxJCDdCt_VoJ7sojGLmdiiCxWexiDDmXB4uQ","version":2}} -->
