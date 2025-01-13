@@ -251,10 +251,25 @@ cnn_model =
 ```
 
 ```elixir
+# cnn_model =
+#   cnn_model
+#   |> Axon.flatten()
+#   |> Axon.dense(128, activation: :relu)
+#   |> Axon.dense(1, activation: :sigmoid)
+
 cnn_model =
-  cnn_model
+  Axon.input("images", shape: {nil, 96, 96, 3})
+  |> Axon.conv(32, kernel_size: {3, 3}, activation: :relu, padding: :same)
+  |> Axon.batch_norm()
+  |> Axon.max_pool(kernel_size: {2, 2}, strides: {2, 2})
+  |> Axon.conv(64, kernel_size: {3, 3}, activation: :relu, padding: :same)
+  |> Axon.batch_norm()
+  |> Axon.max_pool(kernel_size: {2, 2}, strides: {2, 2})
+  |> Axon.conv(128, kernel_size: {3, 3}, activation: :relu, padding: :same)
+  |> Axon.max_pool(kernel_size: {2, 2}, strides: {2, 2})
   |> Axon.flatten()
   |> Axon.dense(128, activation: :relu)
+  |> Axon.dropout(rate: 0.5)
   |> Axon.dense(1, activation: :sigmoid)
 ```
 
@@ -273,4 +288,4 @@ cnn_model
 |> Axon.Loop.run(test_pipeline, cnn_trained_model_state, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":6225,"stamp":{"token":"XCP.BXNCBVyCt8_6pOIU1ZU9mZe8JzYT633rnBku1aAshSORcfAI_WJPLEhsZWxW2O4cMVXxJCDdCt_VoJ7sojGLmdiiCxWexiDDmXB4uQ","version":2}} -->
+<!-- livebook:{"offset":6869,"stamp":{"token":"XCP.6L4fLRK1tRn3q2yxpRMKjO-JP6NJegJH-u10kxs1i6l_VP1ZjiwCzqqzofOlsDtmuqADXlFl7Y8OTfbSZfYEz66GqhUfl_lkfQhkdg","version":2}} -->
