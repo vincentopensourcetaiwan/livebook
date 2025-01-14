@@ -19,6 +19,94 @@ Nx.global_default_backend(EXLA.Backend)
 ```
 
 ```elixir
+# defmodule CatsAndDogs do
+#   defp parse_image(path) do
+#     label = if String.contains?(path, "cat"), do: 0, else: 1
+
+#     case StbImage.read_file(path) do
+#       {:ok, img} -> {img, label}
+#       _error -> :error
+#     end
+#   end
+
+#   defp to_tensors({:ok, {img, label}}, target_height, target_width) do
+#     img_tensor =
+#       img
+#       |> StbImage.resize(target_height, target_width)
+#       |> StbImage.to_nx()
+#       |> Nx.divide(255)
+
+#     # Ensure the image has 3 channels
+#     img_tensor =
+#       case Nx.shape(img_tensor) do
+#         {^target_height, ^target_width, 3} ->
+#           img_tensor
+
+#         # Drop alpha channel
+#         {^target_height, ^target_width, 4} ->
+#           img_tensor[[.., .., 0..2]]
+
+#         # Convert grayscale to RGB
+#         {^target_height, ^target_width, 1} ->
+#           Nx.broadcast(img_tensor, {target_height, target_width, 3})
+
+#         _ ->
+#           raise "Unexpected image shape"
+#       end
+
+#     label_tensor = Nx.tensor([label])
+
+#     {img_tensor, label_tensor}
+#   end
+
+#   def pipeline(paths, batch_size, target_height, target_width) do
+#     paths
+#     |> Enum.shuffle()
+#     |> Task.async_stream(&parse_image/1)
+#     |> Stream.filter(fn
+#       {:ok, {%StbImage{}, _}} -> true
+#       _ -> false
+#     end)
+#     |> Stream.map(&to_tensors(&1, target_height, target_width))
+#     |> Stream.chunk_every(batch_size, batch_size, :discard)
+#     |> Stream.map(fn chunks ->
+#       {img_chunk, label_chunk} = Enum.unzip(chunks)
+#       {Nx.stack(img_chunk), Nx.stack(label_chunk)}
+#     end)
+#   end
+
+#   def pipeline_with_augmentations(
+#         paths,
+#         batch_size,
+#         target_height,
+#         target_width
+#       ) do
+#     paths
+#     |> Enum.shuffle()
+#     |> Task.async_stream(&parse_image/1)
+#     |> Stream.filter(fn
+#       {:ok, {%StbImage{}, _}} -> true
+#       _ -> false
+#     end)
+#     |> Stream.map(&to_tensors(&1, target_height, target_width))
+#     |> Stream.map(&random_flip(&1, :height))
+#     |> Stream.map(&random_flip(&1, :width))
+#     |> Stream.chunk_every(batch_size, batch_size, :discard)
+#     |> Stream.map(fn chunks ->
+#       {img_chunk, label_chunk} = Enum.unzip(chunks)
+#       {Nx.stack(img_chunk), Nx.stack(label_chunk)}
+#     end)
+#   end
+
+#   defp random_flip({image, label}, axis) do
+#     if :rand.uniform() < 0.5 do
+#       {Nx.reverse(image, axes: [axis]), label}
+#     else
+#       {image, label}
+#     end
+#   end
+# end
+
 defmodule CatsAndDogs do
   defp parse_image(path) do
     label = if String.contains?(path, "cat"), do: 0, else: 1
@@ -89,8 +177,10 @@ defmodule CatsAndDogs do
       _ -> false
     end)
     |> Stream.map(&to_tensors(&1, target_height, target_width))
-    |> Stream.map(&random_flip(&1, :height))
-    |> Stream.map(&random_flip(&1, :width))
+    # Flip vertically (height)
+    |> Stream.map(&random_flip(&1, 0))
+    # Flip horizontally (width)
+    |> Stream.map(&random_flip(&1, 1))
     |> Stream.chunk_every(batch_size, batch_size, :discard)
     |> Stream.map(fn chunks ->
       {img_chunk, label_chunk} = Enum.unzip(chunks)
@@ -98,6 +188,7 @@ defmodule CatsAndDogs do
     end)
   end
 
+  # Modified random_flip function using numerical indices
   defp random_flip({image, label}, axis) do
     if :rand.uniform() < 0.5 do
       {Nx.reverse(image, axes: [axis]), label}
@@ -109,25 +200,7 @@ end
 ```
 
 ```elixir
-{test_paths, train_paths} = 
-  Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
-  |> Enum.shuffle()
-  |> Enum.split(1000)
-
-batch_size = 128
-target_height = 96
-target_width = 96
-
-train_pipeline = CatsAndDogs.pipeline(
-  train_paths, batch_size, target_height, target_width
-)
-test_pipeline = CatsAndDogs.pipeline(
-  test_paths, batch_size, target_height, target_width
-)
-
-Enum.take(train_pipeline, 1)
-
-# {test_paths, train_paths} =
+# {test_paths, train_paths} = 
 #   Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
 #   |> Enum.shuffle()
 #   |> Enum.split(1000)
@@ -136,23 +209,41 @@ Enum.take(train_pipeline, 1)
 # target_height = 96
 # target_width = 96
 
-# train_pipeline =
-#   CatsAndDogs.pipeline_with_augmentations(
-#     train_paths,
-#     batch_size,
-#     target_height,
-#     target_width
-#   )
-
-# test_pipeline =
-#   CatsAndDogs.pipeline(
-#     test_paths,
-#     batch_size,
-#     target_height,
-#     target_width
-#   )
+# train_pipeline = CatsAndDogs.pipeline(
+#   train_paths, batch_size, target_height, target_width
+# )
+# test_pipeline = CatsAndDogs.pipeline(
+#   test_paths, batch_size, target_height, target_width
+# )
 
 # Enum.take(train_pipeline, 1)
+
+{test_paths, train_paths} =
+  Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
+  |> Enum.shuffle()
+  |> Enum.split(1000)
+
+batch_size = 128
+target_height = 96
+target_width = 96
+
+train_pipeline =
+  CatsAndDogs.pipeline_with_augmentations(
+    train_paths,
+    batch_size,
+    target_height,
+    target_width
+  )
+
+test_pipeline =
+  CatsAndDogs.pipeline(
+    test_paths,
+    batch_size,
+    target_height,
+    target_width
+  )
+
+Enum.take(train_pipeline, 1)
 ```
 
 ## Section
@@ -273,4 +364,92 @@ cnn_model
 |> Axon.Loop.run(test_pipeline, cnn_trained_model_state, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":6241,"stamp":{"token":"XCP.zmjlQw0jKt1ZOS4pdFtvQtYq24Y0VkxvEF9VNGl3MtFtTGeARWLNNhAwEmsdiHecfZB5EzdaT46p6G4irhGLcarxp9hEtM4_NEAlng","version":2}} -->
+```elixir
+# cnn_model =
+#   Axon.input("images", shape: {nil, 96, 96, 3})
+#   |> Axon.conv(32, kernel_size: {3, 3}, activation: :relu, padding: :same)
+#   |> Axon.batch_norm()
+#   |> Axon.max_pool(kernel_size: {2, 2}, strides: {2, 2})
+#   |> Axon.conv(64, kernel_size: {3, 3}, activation: :relu, padding: :same)
+#   |> Axon.batch_norm()
+#   |> Axon.max_pool(kernel_size: {2, 2}, strides: {2, 2})
+#   |> Axon.conv(128, kernel_size: {3, 3}, activation: :relu, padding: :same)
+#   |> Axon.max_pool(kernel_size: {2, 2}, strides: {2, 2})
+#   |> Axon.flatten()
+#   |> Axon.dense(128, activation: :relu)
+#   |> Axon.dropout(rate: 0.5)
+#   |> Axon.dense(1, activation: :sigmoid)
+
+cnn_model =
+  Axon.input("images", shape: {nil, 96, 96, 3})
+  |> Axon.conv(32, kernel_size: 3, activation: :relu, padding: :same)
+  |> Axon.batch_norm()
+  |> Axon.max_pool(kernel_size: 2, strides: 2)
+  |> Axon.conv(64, kernel_size: 3, activation: :relu, padding: :same)
+  |> Axon.batch_norm()
+  |> Axon.max_pool(kernel_size: 2, strides: 2)
+  |> Axon.conv(128, kernel_size: 3, activation: :relu, padding: :same)
+  |> Axon.max_pool(kernel_size: 2, strides: 2)
+  |> Axon.flatten()
+  |> Axon.dense(128, activation: :relu)
+  |> Axon.dropout(rate: 0.5)
+  |> Axon.dense(1, activation: :sigmoid)
+```
+
+```elixir
+{test_paths, train_paths} =
+  Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
+  |> Enum.shuffle()
+  |> Enum.split(1000)
+
+{test_paths, val_paths} = test_paths |> Enum.split(750)
+
+batch_size = 128
+target_height = 96
+target_width = 96
+
+train_pipeline =
+  CatsAndDogs.pipeline_with_augmentations(
+    train_paths,
+    batch_size,
+    target_height,
+    target_width
+  )
+
+val_pipeline =
+  CatsAndDogs.pipeline(
+    val_paths,
+    batch_size,
+    target_height,
+    target_width
+  )
+
+test_pipeline =
+  CatsAndDogs.pipeline(
+    test_paths,
+    batch_size,
+    target_height,
+    target_width
+  )
+
+Enum.take(train_pipeline, 1)
+```
+
+```elixir
+cnn_trained_model_state =
+  cnn_model
+  |> Axon.Loop.trainer(:binary_cross_entropy, Axon.Optimizers.adam(1.0e-3))
+  |> Axon.Loop.metric(:accuracy)
+  |> Axon.Loop.validate(cnn_model, val_pipeline)
+  |> Axon.Loop.early_stop("validation_loss", mode: :min)
+  |> Axon.Loop.run(train_pipeline, %{}, epochs: 100, compiler: EXLA)
+```
+
+```elixir
+cnn_model
+|> Axon.Loop.evaluator()
+|> Axon.Loop.metric(:accuracy)
+|> Axon.Loop.run(test_pipeline, cnn_trained_model_state, compiler: EXLA)
+```
+
+<!-- livebook:{"offset":11234,"stamp":{"token":"XCP.zDNajUnsdLBw2L8EvcOs9zbLrKH1o2SzHJOmDsog8o4VpPMqPj2jMzdoRzmJDmDZkadJaMJGhUsXLpTAmGibTKYH3CZEDxhNdvG3lg","version":2}} -->
