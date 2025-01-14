@@ -90,7 +90,7 @@ end
 
 ```elixir
 {test_paths, train_paths} = 
-  Path.wildcard("train/*.jpg")
+  Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
   |> Enum.shuffle()
   |> Enum.split(1000)
 
@@ -122,5 +122,8 @@ test_pipeline = CatsAndDogs.pipeline(
 )
 
 Enum.take(train_pipeline, 1)
+```
 
+```elixir
+{cnn_base, cnn_base_params} = AxonOnnx.import("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/mobilenetv2-7.onnx", batch_size: batch_size)
 ```
