@@ -452,4 +452,4 @@ cnn_model
 |> Axon.Loop.run(test_pipeline, cnn_trained_model_state, compiler: EXLA)
 ```
 
-<!-- livebook:{"offset":11234,"stamp":{"token":"XCP.zDNajUnsdLBw2L8EvcOs9zbLrKH1o2SzHJOmDsog8o4VpPMqPj2jMzdoRzmJDmDZkadJaMJGhUsXLpTAmGibTKYH3CZEDxhNdvG3lg","version":2}} -->
+<!-- livebook:{"offset":11234,"stamp":{"token":"XCP.i0p1T53xuSkUmpe9u8DA04FEnyXDznJjC2shgfj8vecjtFXJOcWwXEvaiD5Xb3K2n-6diXWjmJZyRdiveGxZ7YCCnisHwK6Rs8ezcQ","version":2}} -->

@@ -14,5 +14,113 @@ Mix.install([
 ## Section
 
 ```elixir
+Nx.global_default_backend(EXLA.Backend)
+```
+
+```elixir
+defmodule CatsAndDogs do
+  def pipeline(paths, batch_size, target_height, target_width) do
+    paths
+    |> Enum.shuffle()
+    |> Task.async_stream(&parse_image/1)
+    |> Stream.filter(fn
+      {:ok, {%StbImage{}, _}} -> true
+      _ -> false
+    end)
+    |> Stream.map(&to_tensors(&1, target_height, target_width))
+    # Added explicit step parameter
+    |> Stream.chunk_every(batch_size, batch_size, :discard)
+    |> Stream.map(fn chunks ->
+      {img_chunk, label_chunk} = Enum.unzip(chunks)
+      {Nx.stack(img_chunk), Nx.stack(label_chunk)}
+    end)
+  end
+
+  def pipeline_with_augmentations(paths, batch_size, target_height, target_width) do
+    paths
+    |> Enum.shuffle()
+    |> Task.async_stream(&parse_image/1)
+    |> Stream.filter(fn
+      {:ok, {%StbImage{}, _}} -> true
+      _ -> false
+    end)
+    |> Stream.map(&to_tensors(&1, target_height, target_width))
+    |> Stream.map(&random_flip(&1, :height))
+    |> Stream.map(&random_flip(&1, :width))
+    # Added explicit step parameter
+    |> Stream.chunk_every(batch_size, batch_size, :discard)
+    |> Stream.map(fn chunks ->
+      {img_chunk, label_chunk} = Enum.unzip(chunks)
+      {Nx.stack(img_chunk), Nx.stack(label_chunk)}
+    end)
+  end
+
+  defp random_flip({image, label}, axis) do
+    if :rand.uniform() < 0.5 do
+      {Nx.reverse(image, axes: [axis]), label}
+    else
+      {image, label}
+    end
+  end
+
+  defp parse_image(path) do
+    label = if String.contains?(path, "cat"), do: 0, else: 1
+
+    case StbImage.read_file(path) do
+      # Wrapped in :ok tuple
+      {:ok, img} -> {:ok, {img, label}}
+      error -> error
+    end
+  end
+
+  # Fixed pattern matching
+  defp to_tensors({:ok, {img, label}}, target_height, target_width) do
+    img_tensor =
+      img
+      |> StbImage.resize(target_height, target_width)
+      |> StbImage.to_nx()
+      |> Nx.divide(255)
+      |> Nx.transpose(axes: [:channels, :height, :width])
+
+    label_tensor = Nx.tensor([label])
+    {img_tensor, label_tensor}
+  end
+end
+```
+
+```elixir
+{test_paths, train_paths} = 
+  Path.wildcard("train/*.jpg")
+  |> Enum.shuffle()
+  |> Enum.split(1000)
+
+{test_paths, val_paths} = test_paths |> Enum.split(750)
+
+batch_size = 32
+target_height = 160
+target_width = 160
+
+train_pipeline = CatsAndDogs.pipeline_with_augmentations(
+  train_paths,
+  batch_size,
+  target_height,
+  target_width
+)
+
+val_pipeline = CatsAndDogs.pipeline(
+  val_paths,
+  batch_size,
+  target_height,
+  target_width
+)
+
+test_pipeline = CatsAndDogs.pipeline(
+  test_paths,
+  batch_size,
+  target_height,
+  target_width
+)
+
+Enum.take(train_pipeline, 1)
 
 ```
