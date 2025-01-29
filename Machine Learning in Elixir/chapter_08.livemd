@@ -159,18 +159,6 @@ model =
 ```
 
 ```elixir
-# {cnn_base, cnn_base_params} = AxonOnnx.import("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/mobilenetv2-7.onnx")
-# {_popped, cnn_base} = Axon.pop_node(cnn_base)
-# {_popped, cnn_base} = Axon.pop_node(cnn_base)
-
-# model =
-#   cnn_base
-#   |> Axon.namespace("feature_extractor")
-#   |> Axon.freeze()
-#   |> Axon.global_avg_pool(channels: :first)
-#   |> Axon.dropout(rate: 0.2)
-#   |> Axon.dense(1)
-
 # Specify the batch size when importing the model
 {cnn_base, cnn_base_params} = AxonOnnx.import(
   "/Users/vincentlin/projects/livebook/Machine Learning in Elixir/mobilenetv2-7.onnx",
