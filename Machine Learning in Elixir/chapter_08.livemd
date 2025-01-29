@@ -19,16 +19,16 @@ Nx.global_default_backend(EXLA.Backend)
 
 ```elixir
 defmodule CatsAndDogs do
-  def pipeline(paths, batch_size, target_height, target_width) do
+  def pipeline(paths, batch_size, _target_height, _target_width) do
     paths
     |> Enum.shuffle()
     |> Task.async_stream(&parse_image/1)
     |> Stream.filter(fn
-      {:ok, {%StbImage{}, _}} -> true
+      {:ok, {:ok, {%StbImage{shape: {_, _, 3}}, _}}} -> true
       _ -> false
     end)
-    |> Stream.map(&to_tensors(&1, target_height, target_width))
-    # Added explicit step parameter
+    |> Stream.map(fn {:ok, {:ok, image_data}} -> image_data end)
+    |> Stream.map(&to_tensors/1)
     |> Stream.chunk_every(batch_size, batch_size, :discard)
     |> Stream.map(fn chunks ->
       {img_chunk, label_chunk} = Enum.unzip(chunks)
@@ -36,18 +36,18 @@ defmodule CatsAndDogs do
     end)
   end
 
-  def pipeline_with_augmentations(paths, batch_size, target_height, target_width) do
+  def pipeline_with_augmentations(paths, batch_size, _target_height, _target_width) do
     paths
     |> Enum.shuffle()
     |> Task.async_stream(&parse_image/1)
     |> Stream.filter(fn
-      {:ok, {%StbImage{}, _}} -> true
+      {:ok, {:ok, {%StbImage{shape: {_, _, 3}}, _}}} -> true
       _ -> false
     end)
-    |> Stream.map(&to_tensors(&1, target_height, target_width))
+    |> Stream.map(fn {:ok, {:ok, image_data}} -> image_data end)
+    |> Stream.map(&to_tensors/1)
     |> Stream.map(&random_flip(&1, :height))
     |> Stream.map(&random_flip(&1, :width))
-    # Added explicit step parameter
     |> Stream.chunk_every(batch_size, batch_size, :discard)
     |> Stream.map(fn chunks ->
       {img_chunk, label_chunk} = Enum.unzip(chunks)
@@ -65,25 +65,25 @@ defmodule CatsAndDogs do
 
   defp parse_image(path) do
     label = if String.contains?(path, "cat"), do: 0, else: 1
-
     case StbImage.read_file(path) do
-      # Wrapped in :ok tuple
-      {:ok, img} -> {:ok, {img, label}}
+      {:ok, img} -> 
+        case img.shape do
+          {_, _, 3} -> {:ok, {img, label}}
+          _ -> {:error, :invalid_shape}
+        end
       error -> error
     end
   end
-
-  # Fixed pattern matching
-  defp to_tensors({:ok, {img, label}}, target_height, target_width) do
+  
+  defp to_tensors({img, label}) do
     img_tensor =
       img
-      |> StbImage.resize(target_height, target_width)
+      |> StbImage.resize(224, 224)
       |> StbImage.to_nx()
       |> Nx.divide(255)
       |> Nx.transpose(axes: [:channels, :height, :width])
-
-    label_tensor = Nx.tensor([label])
-    {img_tensor, label_tensor}
+    
+    {img_tensor, Nx.tensor([label])}
   end
 end
 ```
@@ -140,4 +140,101 @@ Axon.Display.as_graph(cnn_base, input_template)
 
 ```elixir
 Axon.Display.as_graph(cnn_base, input_template)
+```
+
+```elixir
+cnn_base = cnn_base |> Axon.namespace("feature_extractor")
+```
+
+```elixir
+cnn_base = cnn_base |> Axon.freeze()
+```
+
+```elixir
+model =
+  cnn_base
+  |> Axon.global_avg_pool(channels: :first)
+  |> Axon.dropout(rate: 0.2)
+  |> Axon.dense(1)
+```
+
+```elixir
+# {cnn_base, cnn_base_params} = AxonOnnx.import("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/mobilenetv2-7.onnx")
+# {_popped, cnn_base} = Axon.pop_node(cnn_base)
+# {_popped, cnn_base} = Axon.pop_node(cnn_base)
+
+# model =
+#   cnn_base
+#   |> Axon.namespace("feature_extractor")
+#   |> Axon.freeze()
+#   |> Axon.global_avg_pool(channels: :first)
+#   |> Axon.dropout(rate: 0.2)
+#   |> Axon.dense(1)
+
+# Specify the batch size when importing the model
+{cnn_base, cnn_base_params} = AxonOnnx.import(
+  "/Users/vincentlin/projects/livebook/Machine Learning in Elixir/mobilenetv2-7.onnx",
+  batch_size: batch_size
+)
+
+# Remove the last two layers
+{_popped, cnn_base} = Axon.pop_node(cnn_base)
+{_popped, cnn_base} = Axon.pop_node(cnn_base)
+
+# Build the complete model
+model =
+  cnn_base
+  |> Axon.namespace("feature_extractor")
+  |> Axon.freeze()
+  |> Axon.global_avg_pool(channels: :first)
+  |> Axon.dropout(rate: 0.2)
+  |> Axon.dense(1)
+```
+
+```elixir
+# Let's test the pipeline again
+defmodule PipelineDebug do
+  def test_pipeline_output(paths, batch_size) do
+    IO.puts("\nTesting pipeline with #{length(paths)} paths...")
+    
+    pipeline = CatsAndDogs.pipeline_with_augmentations(paths, batch_size, nil, nil)
+    
+    IO.puts("Taking first 2 batches...")
+    case Enum.take(pipeline, 2) do
+      [] -> 
+        IO.puts("Pipeline is empty!")
+      batches -> 
+        IO.puts("Got #{length(batches)} batches")
+        {images, labels} = hd(batches)
+        IO.puts("First batch shapes:")
+        IO.puts("Images: #{inspect(Nx.shape(images))}")
+        IO.puts("Labels: #{inspect(Nx.shape(labels))}")
+    end
+  end
+end
+
+# Test the pipeline
+batch_size = 32
+test_paths = Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
+PipelineDebug.test_pipeline_output(test_paths, batch_size)
+```
+
+```elixir
+loss = &Axon.Losses.binary_cross_entropy(&1, &2,
+  reduction: :mean,
+  from_logits: true
+)
+optimizer = Axon.Optimizers.adam(1.0e-4)
+trained_model_state =
+  model
+  |> Axon.Loop.trainer(loss, optimizer)
+  |> Axon.Loop.metric(:accuracy)
+  |> Axon.Loop.validate(model, val_pipeline)
+  |> Axon.Loop.early_stop("validation_loss", mode: :min, patience: 5)
+  |> Axon.Loop.run(
+    train_pipeline,
+    %{"feature_extractor" => cnn_base_params},
+    epochs: 100,
+    compiler: EXLA
+  )
 ```
