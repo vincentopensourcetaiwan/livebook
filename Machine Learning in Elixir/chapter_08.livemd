@@ -226,3 +226,12 @@ trained_model_state =
     compiler: EXLA
   )
 ```
+
+```elixir
+eval_model = model |> Axon.sigmoid()
+
+eval_model
+  |> Axon.Loop.evaluator()
+  |> Axon.Loop.metric(:accuracy)
+  |> Axon.Loop.run(test_pipeline, trained_model_state, compiler: EXLA)
+```
