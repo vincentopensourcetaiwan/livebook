@@ -235,3 +235,100 @@ eval_model
   |> Axon.Loop.metric(:accuracy)
   |> Axon.Loop.run(test_pipeline, trained_model_state, compiler: EXLA)
 ```
+
+```elixir
+model = model |> Axon.unfreeze(up: 50)
+```
+
+```elixir
+loss = &Axon.Losses.binary_cross_entropy(&1, &2,
+    reduction: :mean,
+    from_logits: true
+)
+optimizer = Axon.Optimizers.rmsprop(1.0e-5)
+
+trained_model_state =
+    model
+    |> Axon.Loop.trainer(loss, optimizer)
+    |> Axon.Loop.metric(:accuracy)
+    |> Axon.Loop.validate(model, val_pipeline)
+    |> Axon.Loop.early_stop("validation_loss", mode: :min, patience: 5)
+    |> Axon.Loop.run(
+        train_pipeline,
+        trained_model_state,
+        epochs: 100,
+        compiler: EXLA
+    )
+```
+
+```elixir
+eval_model = model |> Axon.sigmoid()
+
+eval_model
+|> Axon.Loop.evaluator()
+|> Axon.Loop.metric(:accuracy)
+|> Axon.Loop.run(test_pipeline, trained_model_state, compiler: EXLA)
+```
+
+```elixir
+defmodule Predict do
+  def predict_image(model_state, path) do
+    # Create model architecture
+    {base_model, _} = AxonOnnx.import("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/mobilenetv2-7.onnx", batch_size: 1)
+    {_popped, base_model} = Axon.pop_node(base_model)
+    {_popped, base_model} = Axon.pop_node(base_model)
+    
+    model = 
+      base_model
+      |> Axon.namespace("feature_extractor")
+      |> Axon.freeze()
+      |> Axon.global_avg_pool(channels: :first)
+      |> Axon.dropout(rate: 0.2)
+      |> Axon.dense(1)
+
+    # Process single image
+    case StbImage.read_file(path) do
+      {:ok, img} ->
+        # Convert to tensor using same preprocessing as training
+        img_tensor =
+          img
+          |> StbImage.resize(224, 224)
+          |> StbImage.to_nx()
+          |> Nx.divide(255)
+          |> Nx.transpose(axes: [:channels, :height, :width])
+          |> Nx.new_axis(0)  # Add batch dimension
+        
+        # Get prediction
+        prediction = Axon.predict(model, model_state, img_tensor)
+        
+        # Get probabilities and handle tensor shape
+        probs = Nx.sigmoid(prediction)
+        confidence = probs[0][0] |> Nx.to_number()
+        
+        # Get predicted class
+        class = if confidence > 0.5, do: "Dog", else: "Cat"
+        final_confidence = max(confidence, 1 - confidence)
+        
+        # Extract true class from filename
+        true_class = if String.contains?(path, "cat"), do: "Cat", else: "Dog"
+        
+        IO.puts("\nPrediction for #{Path.basename(path)}:")
+        IO.puts("True class: #{true_class}")
+        IO.puts("Predicted: #{class}")
+        IO.puts("Confidence: #{Float.round(final_confidence * 100, 2)}%")
+        IO.puts("Correct? #{class == true_class}")
+      
+      error ->
+        IO.puts("Error reading image #{path}: #{inspect(error)}")
+    end
+  end
+end
+
+# Test on a few images
+test_paths = Path.wildcard("/Users/vincentlin/projects/livebook/Machine Learning in Elixir/train/*.jpg")
+# Take a random sample of 5 images
+test_images = test_paths |> Enum.shuffle() |> Enum.take(5)
+
+# Make predictions
+Enum.each(test_images, &Predict.predict_image(trained_model_state, &1))
+```
