@@ -18,5 +18,13 @@ Nx.default_backend (EXLA.Backend)
 ```
 
 ```elixir
-Scidata. IMDBReviews.download()
+data = Scidata.IMDBReviews.download()
+```
+
+```elixir
+{train_data, test_data} =
+  data.review
+  |> Enum.zip(data.sentiment)
+  |> Enum.shuffle()
+  |> Enum.split(23_000)
 ```
