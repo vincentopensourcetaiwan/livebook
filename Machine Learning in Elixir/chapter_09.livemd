@@ -1,0 +1,22 @@
+# chapter 09
+
+```elixir
+Mix.install([
+  {:scidata, "~> 0.1"},
+  {:axon, "~> 0.5"},
+  {:exla, "~> 0.6"},
+  {:nx, "~> 0.6"},
+  {:table_rex, "~> 3.1.1"},
+  {:kino, "~> 0.7"}
+])
+```
+
+## Section
+
+```elixir
+Nx.default_backend (EXLA.Backend)
+```
+
+```elixir
+Scidata. IMDBReviews.download()
+```
