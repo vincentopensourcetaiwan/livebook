@@ -175,3 +175,17 @@ test_pipeline =
 
 Enum.take(train_pipeline, 1)
 ```
+
+```elixir
+model = 
+  Axon.input("review")
+  |> Axon.embedding(num_tokens + 2, 64)
+  |> Axon.flatten()
+  |> Axon.dense(64, activation: :relu)
+  |> Axon.dense(1)
+```
+
+```elixir
+input_template = Nx.template({64, 64}, :s64)
+Axon.Display.as_graph(model, input_template)
+```
