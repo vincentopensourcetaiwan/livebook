@@ -28,3 +28,110 @@ data = Scidata.IMDBReviews.download()
   |> Enum.shuffle()
   |> Enum.split(23_000)
 ```
+
+```elixir
+frequencies =
+  Enum.reduce(train_data, %{}, fn {review, _}, tokens ->
+    review
+    |> String.downcase()
+    |> String.replace(~r/[\p{P}\p{S}]/, "")
+    |> String.split()
+    |> Enum.reduce(tokens, &Map.update(&2, &1, 1, fn x -> x + 1 end))
+  end)
+```
+
+```elixir
+num_tokens = 1024
+
+tokens =
+  frequencies
+  |> Enum.sort_by(&elem(&1, 1), :desc)
+  |> Enum.take(num_tokens)
+```
+
+```elixir
+tokens =
+  frequencies
+  |> Enum.sort_by(&elem(&1, 1), :desc)
+  |> Enum.take(num_tokens)
+  |> Enum.with_index(fn {token, _}, i -> {token, i} end)
+  |> Map.new()
+```
+
+```elixir
+review = "The Departed is Martin Scorsese's best work, and anybody who disagrees is wrong. This movie is amazing."
+
+unknown_token = 0
+
+tokens =
+  frequencies
+  |> Enum.sort_by(&elem(&1, 1), :desc)
+  |> Enum.take(num_tokens)
+  |> Enum.with_index(fn {token, _}, i -> {token, i + 1} end)
+  |> Map.new()
+
+tokenize = fn review ->
+  review
+  |> String.downcase()
+  |> String.replace(~r/[\p{P}\p{S}]/, "")
+  |> String.split()
+  |> Enum.map(&Map.get(tokens, &1, unknown_token))
+  |> Nx.tensor()
+end
+
+tokenize.(review)
+```
+
+```elixir
+batch_size = 64
+
+train_pipeline =
+  train_data
+  |> Stream.map(fn {review, label} ->
+    {tokenize.(review), Nx.tensor(label)}
+  end)
+  |> Stream.chunk_every(batch_size, batch_size, :discard)
+  |> Stream.map(fn reviews_and_labels ->
+    {review, label} = Enum.unzip(reviews_and_labels)
+    {Nx.stack(review), Nx.stack(label) |> Nx.new_axis(-1)}
+  end)
+
+test_pipeline =
+  test_data
+  |> Stream.map(fn {review, label} ->
+    {tokenize.(review), Nx.tensor(label)}
+  end)
+  |> Stream.chunk_every(batch_size, batch_size, :discard)
+  |> Stream.map(fn reviews_and_labels ->
+    {review, label} = Enum.unzip(reviews_and_labels)
+    {Nx.stack(review), Nx.stack(label) |> Nx.new_axis(-1)}
+  end)
+```
+
+```elixir
+# Enum.take(train_pipeline, 1)
+```
+
+```elixir
+pad_token = 0
+unknown_token = 1
+
+max_seq_len = 64
+
+tokens =
+  frequencies
+  |> Enum.sort_by(&elem(&1, 1), :desc)
+  |> Enum.take(num_tokens)
+  |> Enum.with_index(fn {token, _}, i -> {token, i + 2} end)
+  |> Map.new()
+
+tokenize = fn review ->
+  review
+  |> String.downcase()
+  |> String.replace(~r/[\p{P}]/, "")
+  |> String.split()
+  |> Enum.map(&Map.get(tokens, &1, unknown_token))
+  |> Nx.tensor()
+  |> then(&Nx.pad(&1, pad_token, [[0, max_seq_len - Nx.size(&1), 0]]))
+end
+```
