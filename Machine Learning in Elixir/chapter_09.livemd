@@ -126,13 +126,25 @@ tokens =
   |> Map.new()
 
 tokenize = fn review ->
-  review
-  |> String.downcase()
-  |> String.replace(~r/[\p{P}]/, "")
-  |> String.split()
-  |> Enum.map(&Map.get(tokens, &1, unknown_token))
-  |> Nx.tensor()
-  |> then(&Nx.pad(&1, pad_token, [[0, max_seq_len - Nx.size(&1), 0]]))
+  tokens =
+    review
+    |> String.downcase()
+    |> String.replace(~r/[\p{P}]/, "")
+    |> String.split()
+    |> Enum.map(&Map.get(tokens, &1, unknown_token))
+
+  # Take first max_seq_len tokens if longer, or pad with zeros if shorter
+  cond do
+    length(tokens) > max_seq_len ->
+      tokens |> Enum.take(max_seq_len) |> Nx.tensor()
+
+    length(tokens) < max_seq_len ->
+      padding = List.duplicate(pad_token, max_seq_len - length(tokens))
+      (tokens ++ padding) |> Nx.tensor()
+
+    true ->
+      tokens |> Nx.tensor()
+  end
 end
 ```
 
