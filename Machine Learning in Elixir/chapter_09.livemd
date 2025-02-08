@@ -269,3 +269,68 @@ model
 |> Axon.Loop.metric(:accuracy)
 |> Axon.Loop.run(test_pipeline, trained_model_state, compiler: EXLA)
 ```
+
+```elixir
+backward_sequence = Axon.nx(forward_sequence, &Nx.reverse(&1, axes: [1]))
+
+{forward_state, forward_out} = Axon.lstm(forward_sequence, 64)
+{backward_state, backward_out} = Axon.lstm(backward_sequence, 64)
+
+out_state =
+  Axon.concatenate(
+    forward_state,
+    Axon.nx(backward_state, &Nx.reverse(&1, axes: [1]))
+  )
+
+out_sequence =
+  Axon.concatenate(
+    forward_out,
+    Axon.nx(backward_out, &Nx.reverse(&1, axes: [1]))
+  )
+```
+
+```elixir
+sequence = Axon.input("review")
+mask = Axon.mask(sequence, 0)
+embedded = Axon.embedding(sequence, num_tokens + 2, 64)
+
+{rnn_sequence, _state} =
+  Axon.bidirectional(
+    embedded,
+    &Axon.lstm(&1, 64, mask: mask, unroll: :static),
+    &Axon.concatenate/2
+  )
+
+final_token =
+  Axon.nx(rnn_sequence, fn seq ->
+    Nx.squeeze(seq[[0..-1//1, -1, 0..-1//1]])
+  end)
+
+model =
+  final_token
+  |> Axon.dense(64, activation: :relu)
+  |> Axon.dense(1)
+```
+
+```elixir
+loss =
+  &Axon.Losses.binary_cross_entropy(&1, &2,
+    from_logits: true,
+    reduction: :mean
+  )
+
+optimizer = Axon.Optimizers.adam(1.0e-4)
+
+trained_model_state =
+  model
+  |> Axon.Loop.trainer(loss, optimizer)
+  |> Axon.Loop.metric(:accuracy)
+  |> Axon.Loop.run(train_pipeline, %{}, epochs: 10, compiler: EXLA)
+```
+
+```elixir
+model
+|> Axon.Loop.evaluator()
+|> Axon.Loop.metric(:accuracy)
+|> Axon.Loop.run(test_pipeline, trained_model_state, compiler: EXLA)
+```
