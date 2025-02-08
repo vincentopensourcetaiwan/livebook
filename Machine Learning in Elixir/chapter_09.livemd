@@ -135,3 +135,31 @@ tokenize = fn review ->
   |> then(&Nx.pad(&1, pad_token, [[0, max_seq_len - Nx.size(&1), 0]]))
 end
 ```
+
+```elixir
+batch_size = 64
+
+train_pipeline =
+  train_data
+  |> Stream.map(fn {review, label} ->
+    {tokenize.(review), Nx.tensor(label)}
+  end)
+  |> Stream.chunk_every(batch_size, batch_size, :discard)
+  |> Stream.map(fn reviews_and_labels ->
+    {review, label} = Enum.unzip(reviews_and_labels)
+    {Nx.stack(review), Nx.stack(label) |> Nx.new_axis(-1)}
+  end)
+
+test_pipeline =
+  test_data
+  |> Stream.map(fn {review, label} ->
+    {tokenize.(review), Nx.tensor(label)}
+  end)
+  |> Stream.chunk_every(batch_size, batch_size, :discard)
+  |> Stream.map(fn reviews_and_labels ->
+    {review, label} = Enum.unzip(reviews_and_labels)
+    {Nx.stack(review), Nx.stack(label) |> Nx.new_axis(-1)}
+  end)
+
+Enum.take(train_pipeline, 1)
+```
