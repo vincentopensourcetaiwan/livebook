@@ -189,3 +189,26 @@ model =
 input_template = Nx.template({64, 64}, :s64)
 Axon.Display.as_graph(model, input_template)
 ```
+
+```elixir
+loss =
+  &Axon.Losses.binary_cross_entropy(&1, &2,
+    from_logits: true,
+    reduction: :mean
+  )
+
+optimizer = Axon.Optimizers.adam(1.0e-4)
+
+trained_model_state =
+  model
+  |> Axon.Loop.trainer(loss, optimizer)
+  |> Axon.Loop.metric(:accuracy)
+  |> Axon.Loop.run(train_pipeline, %{}, epochs: 10, compiler: EXLA)
+```
+
+```elixir
+model
+|> Axon.Loop.evaluator()
+|> Axon.Loop.metric(:accuracy)
+|> Axon.Loop.run(test_pipeline, trained_model_state, compiler: EXLA)
+```
