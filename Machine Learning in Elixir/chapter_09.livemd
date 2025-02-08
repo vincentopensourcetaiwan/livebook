@@ -212,3 +212,19 @@ model
 |> Axon.Loop.metric(:accuracy)
 |> Axon.Loop.run(test_pipeline, trained_model_state, compiler: EXLA)
 ```
+
+```elixir
+sequence = Axon.input("review")
+```
+
+```elixir
+embedded = sequence |> Axon.embedding(num_tokens + 2, 64)
+```
+
+```elixir
+mask = Axon.mask(sequence, 0)
+```
+
+```elixir
+{rnn_sequence, _state} = Axon.lstm(embedded, 64, mask: mask, unroll: :static)
+```
